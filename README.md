@@ -8,6 +8,9 @@ Run the following command to install .NET MAUI:
 ```sh
 dotnet workload install maui
 ```
+### Install Windows App SDK
+If you are using a Windows, install the necessary Windows App SDK components:
+https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/downloads
 
 ### Install Xcode (For macOS)
 If you are using a MacBook, install the necessary Xcode components:
