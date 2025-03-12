@@ -1,4 +1,4 @@
-﻿using TaskManager.Pages; 
+﻿using TaskManager.Views;
 
 namespace TaskManager;
 
@@ -8,6 +8,6 @@ public partial class App : Application
 	{
 		InitializeComponent();
 
-		MainPage = new TaskDetailPage();
+		MainPage = new TaskListPage();
 	}
 }

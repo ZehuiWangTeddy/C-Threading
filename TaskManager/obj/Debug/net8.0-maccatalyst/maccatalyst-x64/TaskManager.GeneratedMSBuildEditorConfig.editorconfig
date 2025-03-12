@@ -34,12 +34,6 @@ build_metadata.AdditionalFiles.ManifestResourceName = TaskManager.MainPage.xaml
 build_metadata.AdditionalFiles.TargetPath = MainPage.xaml
 build_metadata.AdditionalFiles.RelativePath = MainPage.xaml
 
-[/Users/dtg/Desktop/C\#/C-Threading/TaskManager/Pages/TaskDetailPage.xaml]
-build_metadata.AdditionalFiles.GenKind = Xaml
-build_metadata.AdditionalFiles.ManifestResourceName = TaskManager.Pages.TaskDetailPage.xaml
-build_metadata.AdditionalFiles.TargetPath = Pages/TaskDetailPage.xaml
-build_metadata.AdditionalFiles.RelativePath = Pages/TaskDetailPage.xaml
-
 [/Users/dtg/Desktop/C\#/C-Threading/TaskManager/Resources/Styles/Colors.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = TaskManager.Resources.Styles.Colors.xaml
@@ -51,3 +45,15 @@ build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = TaskManager.Resources.Styles.Styles.xaml
 build_metadata.AdditionalFiles.TargetPath = Resources/Styles/Styles.xaml
 build_metadata.AdditionalFiles.RelativePath = Resources/Styles/Styles.xaml
+
+[/Users/dtg/Desktop/C\#/C-Threading/TaskManager/Views/AddTaskPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = TaskManager.Views.AddTaskPage.xaml
+build_metadata.AdditionalFiles.TargetPath = Views/AddTaskPage.xaml
+build_metadata.AdditionalFiles.RelativePath = Views/AddTaskPage.xaml
+
+[/Users/dtg/Desktop/C\#/C-Threading/TaskManager/Views/TaskListPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = TaskManager.Views.TaskListPage.xaml
+build_metadata.AdditionalFiles.TargetPath = Views/TaskListPage.xaml
+build_metadata.AdditionalFiles.RelativePath = Views/TaskListPage.xaml

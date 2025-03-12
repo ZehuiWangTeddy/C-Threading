@@ -1,0 +1,40 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TaskManager.Views.AddTaskPage"
+             Title="Add New Task">
+    
+    <ScrollView Padding="20">
+        <VerticalStackLayout Spacing="15">
+            <Label Text="New Task" 
+                   FontSize="20" 
+                   FontAttributes="Bold" 
+                   HorizontalOptions="Center"/>
+            
+            <Entry Placeholder="Task Name" 
+                   Text="{Binding TaskName}"/>
+            
+            <Entry Placeholder="Start Time (e.g., 09:00)" 
+                   Text="{Binding StartTime}"/>
+            
+            <Entry Placeholder="End Time (e.g., 17:00)" 
+                   Text="{Binding EndTime}"/>
+            
+            <Grid ColumnDefinitions="*, *" 
+                  ColumnSpacing="10">
+                <Button Text="Confirm" 
+                        Command="{Binding ConfirmCommand}"
+                        Grid.Column="0" 
+                        BackgroundColor="#4CAF50" 
+                        TextColor="White"
+                        CornerRadius="5"/>
+                
+                <Button Text="Cancel" 
+                        Clicked="OnCancelClicked"
+                        Grid.Column="1" 
+                        BackgroundColor="#9E9E9E" 
+                        TextColor="White"
+                        CornerRadius="5"/>
+            </Grid>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
