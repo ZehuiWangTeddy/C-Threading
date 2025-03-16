@@ -1,3 +1,4 @@
+<!-- TaskListPage.xaml -->
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="TaskManager.Views.TaskListPage"
@@ -26,14 +27,14 @@
                                 <Label Text="{Binding Name}" 
                                        FontSize="18" 
                                        FontAttributes="Bold"/>
-                                <HorizontalStackLayout Spacing="15">
-                                    <Label Text="{Binding StartTime}" 
-                                           FontSize="14"/>
-                                    <Label Text="-" 
-                                           FontSize="14"/>
-                                    <Label Text="{Binding EndTime}" 
-                                           FontSize="14"/>
-                                </HorizontalStackLayout>
+                                <VerticalStackLayout Spacing="5">
+                                    <Label Text="{Binding TaskType}" 
+                                           FontSize="14"
+                                           TextColor="LightGray"/>
+                                    <Label Text="{Binding ExecutionTime, StringFormat='Execution: {0:yyyy-MM-dd HH:mm}'}" 
+                                           FontSize="14"
+                                           TextColor="LightGray"/>
+                                </VerticalStackLayout>
                             </VerticalStackLayout>
 
                             <!-- Action Buttons -->
@@ -44,11 +45,19 @@
                                         BackgroundColor="#4CAF50" 
                                         TextColor="White" 
                                         CornerRadius="5"
+                                        WidthRequest="70"
                                         Clicked="OnStartTask"/>
+                                <Button Text="Details" 
+                                        BackgroundColor="#2196F3" 
+                                        TextColor="White" 
+                                        CornerRadius="5"
+                                        WidthRequest="70"
+                                        Clicked="OnDetailsClicked"/>
                                 <Button Text="Cancel" 
                                         BackgroundColor="#f44336" 
                                         TextColor="White" 
                                         CornerRadius="5"
+                                        WidthRequest="70"
                                         Clicked="OnCancelTask"/>
                             </HorizontalStackLayout>
                         </Grid>

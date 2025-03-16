@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Handlers;
 
 namespace TaskManager;
 
@@ -13,7 +14,11 @@ public static class MauiProgram
 			{
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-			});
+			})
+			.ConfigureMauiHandlers(handlers =>
+			{
+				handlers.AddHandler<RadioButton, RadioButtonHandler>(); 
+			});;
 
 #if DEBUG
 		builder.Logging.AddDebug();

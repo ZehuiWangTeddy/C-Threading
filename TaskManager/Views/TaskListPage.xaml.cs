@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Microsoft.Maui.Controls;
 using TaskManager.Views;
+using TaskManager.Models; 
 
 namespace TaskManager.Views
 {
@@ -17,14 +18,14 @@ namespace TaskManager.Views
             // dummy data
             Tasks.Add(new TaskItem { 
                 Name = "Project Meeting", 
-                StartTime = "09:00", 
-                EndTime = "10:30" 
+                TaskType = "Folder Watcher Task", 
+                ExecutionTime = DateTime.Now.AddHours(2)
             });
             
             Tasks.Add(new TaskItem { 
                 Name = "Project Fighting", 
-                StartTime = "10:00", 
-                EndTime = "11:00" 
+                TaskType = "Folder Watcher Task", 
+                ExecutionTime = DateTime.Now.AddHours(5)
             });
         }
 
@@ -54,18 +55,17 @@ namespace TaskManager.Views
                 Tasks.Remove(task);
             }
         }
+        
+        private async void OnDetailsClicked(object sender, System.EventArgs e)
+        {
+            // 暂时显示提示信息
+            await DisplayAlert("Coming Soon", "Task detail feature is under development", "OK");
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected virtual void OnPropertyChanged(string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-    }
-
-    public class TaskItem
-    {
-        public string Name { get; set; }
-        public string StartTime { get; set; }
-        public string EndTime { get; set; }
     }
 }
