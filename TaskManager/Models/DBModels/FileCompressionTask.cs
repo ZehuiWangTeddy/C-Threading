@@ -6,13 +6,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 public class FileCompressionTask : BaseTask
 {
-    public string FileDirectory { get; set; } 
-    public FileCompressionTask() : base("", new ExecutionTime(), PriorityType.Medium) {}
+    public string? FileDirectory { get; set; } 
+    public FileCompressionTask() : base("", PriorityType.Medium) {}
 
-    public FileCompressionTask(string name, ExecutionTime executionTime, PriorityType priority, string fileDirectory) 
-        : base(name, executionTime, priority)
+    public FileCompressionTask(string name, int executionTimeId, PriorityType priority, string fileDirectory) 
+        : base(name, priority)
     {
         FileDirectory = fileDirectory;
+        ExecutionTimeId = executionTimeId;
     }
 
     public override void Execute()

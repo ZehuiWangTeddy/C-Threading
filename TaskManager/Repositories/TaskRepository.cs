@@ -3,6 +3,7 @@ using TaskManager.Models.DBModels;
 using TaskManager.Models.Enums;
 using System.Collections.Generic;
 using System.Linq;
+using TaskManager.Models;
 
 namespace TaskManager.Repositories
 {
@@ -22,11 +23,13 @@ namespace TaskManager.Repositories
     public class TaskRepository : ITaskRepository
     {
         private readonly SQLiteConnection _sqliteConnection;
-
-        // Constructor to initialize SQLiteConnection
+        
         public TaskRepository(string dbPath)
         {
             _sqliteConnection = new SQLiteConnection(dbPath);
+            _sqliteConnection.Execute("PRAGMA foreign_keys = ON;");
+            _sqliteConnection.CreateTable<ExecutionTime>();
+            _sqliteConnection.CreateTable<TaskLogger>();
             _sqliteConnection.CreateTable<EmailNotificationTask>();
             _sqliteConnection.CreateTable<FileBackupSystemTask>();
             _sqliteConnection.CreateTable<FileCompressionTask>();

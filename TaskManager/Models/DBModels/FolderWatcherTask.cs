@@ -4,14 +4,15 @@ using System;
 
 public class FolderWatcherTask : BaseTask
 {
-    public string FolderDirectory { get; set; } 
+    public string? FolderDirectory { get; set; } 
     
-    public FolderWatcherTask() : base("", new ExecutionTime(), PriorityType.Medium) {}
+    public FolderWatcherTask() : base("", PriorityType.Medium) {}
 
-    public FolderWatcherTask(string name, ExecutionTime executionTime, PriorityType priority, string folderDirectory) 
-        : base(name, executionTime, priority)
+    public FolderWatcherTask(string name, int executionTimeId, PriorityType priority, string folderDirectory) 
+        : base(name, priority)
     {
         FolderDirectory = folderDirectory;
+        ExecutionTimeId = executionTimeId;
     }
     
     public override void Execute()
