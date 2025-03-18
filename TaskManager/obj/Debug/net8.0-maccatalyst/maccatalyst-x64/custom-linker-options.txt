@@ -38,7 +38,6 @@ FrameworkAssembly=System.Data.DataSetExtensions
 FrameworkAssembly=System.Data
 FrameworkAssembly=System.Diagnostics.Contracts
 FrameworkAssembly=System.Diagnostics.Debug
-FrameworkAssembly=System.Diagnostics.DiagnosticSource
 FrameworkAssembly=System.Diagnostics.FileVersionInfo
 FrameworkAssembly=System.Diagnostics.Process
 FrameworkAssembly=System.Diagnostics.StackTrace

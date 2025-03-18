@@ -17,8 +17,10 @@
     <Import Project="$(NuGetPackageRoot)microsoft.maui.resizetizer/8.0.100/buildTransitive/Microsoft.Maui.Resizetizer.props" Condition="Exists('$(NuGetPackageRoot)microsoft.maui.resizetizer/8.0.100/buildTransitive/Microsoft.Maui.Resizetizer.props')" />
     <Import Project="$(NuGetPackageRoot)microsoft.maui.core/8.0.100/buildTransitive/Microsoft.Maui.Core.props" Condition="Exists('$(NuGetPackageRoot)microsoft.maui.core/8.0.100/buildTransitive/Microsoft.Maui.Core.props')" />
     <Import Project="$(NuGetPackageRoot)microsoft.maui.controls.build.tasks/8.0.100/buildTransitive/net6.0-maccatalyst13.1/Microsoft.Maui.Controls.Build.Tasks.props" Condition="Exists('$(NuGetPackageRoot)microsoft.maui.controls.build.tasks/8.0.100/buildTransitive/net6.0-maccatalyst13.1/Microsoft.Maui.Controls.Build.Tasks.props')" />
+    <Import Project="$(NuGetPackageRoot)microsoft.entityframeworkcore/9.0.3/buildTransitive/net8.0/Microsoft.EntityFrameworkCore.props" Condition="Exists('$(NuGetPackageRoot)microsoft.entityframeworkcore/9.0.3/buildTransitive/net8.0/Microsoft.EntityFrameworkCore.props')" />
   </ImportGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0-maccatalyst' AND '$(ExcludeRestorePackageImports)' != 'true' ">
+    <PkgNewtonsoft_Json Condition=" '$(PkgNewtonsoft_Json)' == '' ">/Users/dtg/.nuget/packages/newtonsoft.json/9.0.1</PkgNewtonsoft_Json>
     <PkgMicrosoft_NET_ILLink_Tasks Condition=" '$(PkgMicrosoft_NET_ILLink_Tasks)' == '' ">/Users/dtg/.nuget/packages/microsoft.net.illink.tasks/8.0.0</PkgMicrosoft_NET_ILLink_Tasks>
   </PropertyGroup>
 </Project>
