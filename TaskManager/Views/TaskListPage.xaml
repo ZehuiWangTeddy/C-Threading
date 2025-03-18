@@ -1,0 +1,80 @@
+<!-- TaskListPage.xaml -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TaskManager.Views.TaskListPage"
+             Title="Task List">
+    
+    <Grid RowDefinitions="Auto, *, Auto" Padding="20">
+        <!-- Title -->
+        <Label Text="Task List" 
+               FontSize="28" 
+               FontAttributes="Bold" 
+               HorizontalOptions="Center"/>
+
+        <!-- Task List -->
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding Tasks}"
+                        VerticalOptions="Fill">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame Padding="10" 
+                           Margin="0,5" 
+                           BackgroundColor="DarkGray" 
+                           CornerRadius="10">
+                        <Grid ColumnDefinitions="*, Auto">
+                            <!-- Task Details -->
+                            <VerticalStackLayout Grid.Column="0">
+                                <Label Text="{Binding Name}" 
+                                       FontSize="18" 
+                                       FontAttributes="Bold"/>
+                                <VerticalStackLayout Spacing="5">
+                                    <Label Text="{Binding TaskType}" 
+                                           FontSize="14"
+                                           TextColor="LightGray"/>
+                                    <Label Text="{Binding ExecutionTime, StringFormat='Execution: {0:yyyy-MM-dd HH:mm}'}" 
+                                           FontSize="14"
+                                           TextColor="LightGray"/>
+                                </VerticalStackLayout>
+                            </VerticalStackLayout>
+
+                            <!-- Action Buttons -->
+                            <HorizontalStackLayout Grid.Column="1" 
+                                                   Spacing="10" 
+                                                   VerticalOptions="Center">
+                                <Button Text="Start" 
+                                        BackgroundColor="#4CAF50" 
+                                        TextColor="White" 
+                                        CornerRadius="5"
+                                        WidthRequest="70"
+                                        Clicked="OnStartTask"/>
+                                <Button Text="Details" 
+                                        BackgroundColor="#2196F3" 
+                                        TextColor="White" 
+                                        CornerRadius="5"
+                                        WidthRequest="70"
+                                        Clicked="OnDetailsClicked"/>
+                                <Button Text="Cancel" 
+                                        BackgroundColor="#f44336" 
+                                        TextColor="White" 
+                                        CornerRadius="5"
+                                        WidthRequest="70"
+                                        Clicked="OnCancelTask"/>
+                            </HorizontalStackLayout>
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Add Task Button -->
+        <Button Grid.Row="2" 
+                Text="Add Task" 
+                HorizontalOptions="Center" 
+                VerticalOptions="End" 
+                Padding="20,10"
+                BackgroundColor="#2196F3" 
+                TextColor="White" 
+                CornerRadius="20"
+                Clicked="OnAddTaskClicked"/>
+    </Grid>
+</ContentPage>
