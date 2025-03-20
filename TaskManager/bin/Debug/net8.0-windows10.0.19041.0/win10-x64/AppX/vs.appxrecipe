@@ -29,7 +29,7 @@
     <AppXManifest Include="C:\Users\james\Desktop\C-Threading\TaskManager\bin\Debug\net8.0-windows10.0.19041.0\win10-x64\AppxManifest.xml">
       <PackagePath>AppxManifest.xml</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2025-03-20T13:06:33.537</Modified>
+      <Modified>2025-03-20T13:40:27.090</Modified>
     </AppXManifest>
   </ItemGroup>
   <ItemGroup>
@@ -39,15 +39,15 @@
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\james\Desktop\C-Threading\TaskManager\bin\Debug\net8.0-windows10.0.19041.0\win10-x64\TaskManager.runtimeconfig.json">
       <PackagePath>TaskManager.runtimeconfig.json</PackagePath>
-      <Modified>2025-03-18T11:25:26.308</Modified>
+      <Modified>2025-03-20T13:40:26.515</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\james\Desktop\C-Threading\TaskManager\bin\Debug\net8.0-windows10.0.19041.0\win10-x64\TaskManager.dll">
       <PackagePath>TaskManager.dll</PackagePath>
-      <Modified>2025-03-20T13:03:34.092</Modified>
+      <Modified>2025-03-20T13:40:25.008</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\james\Desktop\C-Threading\TaskManager\obj\Debug\net8.0-windows10.0.19041.0\win10-x64\apphost.exe">
       <PackagePath>TaskManager.exe</PackagePath>
-      <Modified>2025-03-20T13:03:34.141</Modified>
+      <Modified>2025-03-20T13:40:25.350</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\james\Desktop\C-Threading\TaskManager\Resources\Raw\AboutAssets.txt">
       <PackagePath>AboutAssets.txt</PackagePath>
@@ -287,13 +287,13 @@
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\james\Desktop\C-Threading\TaskManager\bin\Debug\net8.0-windows10.0.19041.0\win10-x64\TaskManager.deps.json">
       <PackagePath>TaskManager.deps.json</PackagePath>
-      <Modified>2025-03-18T11:25:26.250</Modified>
+      <Modified>2025-03-20T13:40:26.425</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="C:\Users\james\.nuget\packages\microsoft.windows.sdk.net.ref\10.0.19041.56\lib\net8.0\Microsoft.Windows.SDK.NET.dll">
+    <AppxPackagedFile Include="C:\Users\james\.nuget\packages\microsoft.windows.sdk.net.ref\10.0.19041.57\lib\net8.0\Microsoft.Windows.SDK.NET.dll">
       <PackagePath>Microsoft.Windows.SDK.NET.dll</PackagePath>
       <Modified>2024-11-11T17:23:04.000</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="C:\Users\james\.nuget\packages\microsoft.windows.sdk.net.ref\10.0.19041.56\lib\net8.0\WinRT.Runtime.dll">
+    <AppxPackagedFile Include="C:\Users\james\.nuget\packages\microsoft.windows.sdk.net.ref\10.0.19041.57\lib\net8.0\WinRT.Runtime.dll">
       <PackagePath>WinRT.Runtime.dll</PackagePath>
       <Modified>2024-11-11T17:23:04.000</Modified>
     </AppxPackagedFile>

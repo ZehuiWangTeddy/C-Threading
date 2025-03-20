@@ -15,13 +15,13 @@
           "Microsoft.Maui.Controls.Compatibility": "8.0.100",
           "MySql.Data": "9.2.0",
           "SkiaSharp.Views.Maui.Controls": "3.116.1",
-          "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.19041.56"
+          "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.19041.57"
         },
         "runtime": {
           "TaskManager.dll": {}
         }
       },
-      "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.19041.56": {
+      "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.19041.57": {
         "runtime": {
           "Microsoft.Windows.SDK.NET.dll": {
             "assemblyVersion": "10.0.19041.38",
@@ -809,7 +809,7 @@
       "serviceable": false,
       "sha512": ""
     },
-    "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.19041.56": {
+    "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.19041.57": {
       "type": "runtimepack",
       "serviceable": false,
       "sha512": ""

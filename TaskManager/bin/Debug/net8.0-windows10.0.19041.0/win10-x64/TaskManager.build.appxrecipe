@@ -217,10 +217,10 @@
     <AppxPackagedFile Include="C:\Users\james\Desktop\C-Threading\TaskManager\bin\Debug\net8.0-windows10.0.19041.0\win10-x64\TaskManager.deps.json">
       <PackagePath>TaskManager.deps.json</PackagePath>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="C:\Users\james\.nuget\packages\microsoft.windows.sdk.net.ref\10.0.19041.56\lib\net8.0\Microsoft.Windows.SDK.NET.dll">
+    <AppxPackagedFile Include="C:\Users\james\.nuget\packages\microsoft.windows.sdk.net.ref\10.0.19041.57\lib\net8.0\Microsoft.Windows.SDK.NET.dll">
       <PackagePath>Microsoft.Windows.SDK.NET.dll</PackagePath>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="C:\Users\james\.nuget\packages\microsoft.windows.sdk.net.ref\10.0.19041.56\lib\net8.0\WinRT.Runtime.dll">
+    <AppxPackagedFile Include="C:\Users\james\.nuget\packages\microsoft.windows.sdk.net.ref\10.0.19041.57\lib\net8.0\WinRT.Runtime.dll">
       <PackagePath>WinRT.Runtime.dll</PackagePath>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\james\.nuget\packages\bouncycastle.cryptography\2.3.1\lib\net6.0\BouncyCastle.Cryptography.dll">
