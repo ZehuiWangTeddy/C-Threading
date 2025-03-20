@@ -1,21 +1,30 @@
-﻿namespace TaskManager;
 
-public partial class App : Application
+using TaskManager.Repositories;
+using TaskManager.Models.DBModels;
+using SQLite;
+using System.IO;
+using TaskManager.Views;
+
+namespace TaskManager
 {
-	public App()
-	{
-		
-		var sampleTask = new TaskLog
-		{
-			TaskName = "Data Processing",
-			ThreadId = 12345,
-			ExecutionTime = "00:02:30",
-			Priority = TaskPriority.High,
-			Status = TaskStatus.Running,
-			ExecutionLog = "Task started successfully.\nProcessing data...\nTask completed."
-		};
-		InitializeComponent();
+    public partial class App : Application
+    {
+        private const string DatabaseFileName = "TaskManager.db";
 
-		MainPage = new TaskDetails(sampleTask);
-	}
+        public App()
+        {
+            InitializeComponent();
+            InitializeDatabase();
+
+            MainPage = new AppShell();
+            MainPage = new TaskListPage();
+        }
+
+        private void InitializeDatabase()
+        {
+            var databasePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), DatabaseFileName);
+            var taskRepository = new TaskRepository(databasePath);
+            Console.WriteLine($"Database and tables created at {databasePath}");
+        }
+    }
 }

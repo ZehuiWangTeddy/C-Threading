@@ -1,0 +1,160 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:TaskManager.Converters"
+             x:Class="TaskManager.Views.AddTaskPage"
+             Title="Add New Task">
+    
+    <ContentPage.Resources>
+        <converters:StringToBoolConverter x:Key="StringToBoolConverter"/>
+    </ContentPage.Resources>
+
+    <ScrollView Padding="20">
+        <VerticalStackLayout Spacing="20">
+            <!-- Common Fields -->
+            <Label Text="Task Name" 
+                   FontAttributes="Bold"/>
+            <Entry Placeholder="Task Name"
+                   Text="{Binding TaskName}"/>
+
+            <!-- Task Type Selection -->
+            <VerticalStackLayout Spacing="5">
+                <Label Text="Task Type" 
+                       FontAttributes="Bold"/>
+                <HorizontalStackLayout Spacing="20">
+                    <RadioButton Content="Folder Watcher"
+                                GroupName="TaskTypeGroup"
+                                IsChecked="{Binding SelectedTaskType, Converter={StaticResource StringToBoolConverter}, ConverterParameter='Folder Watcher Task'}"
+                                FontSize="14"/>
+                    
+                    <RadioButton Content="File Compression"
+                                GroupName="TaskTypeGroup"
+                                IsChecked="{Binding SelectedTaskType, Converter={StaticResource StringToBoolConverter}, ConverterParameter='File Compression Task'}"
+                                FontSize="14"/>
+                    
+                    <RadioButton Content="File Backup"
+                                GroupName="TaskTypeGroup"
+                                IsChecked="{Binding SelectedTaskType, Converter={StaticResource StringToBoolConverter}, ConverterParameter='File Backup System Task'}"
+                                FontSize="14"/>
+                    
+                    <RadioButton Content="Email Notification"
+                                GroupName="TaskTypeGroup"
+                                IsChecked="{Binding SelectedTaskType, Converter={StaticResource StringToBoolConverter}, ConverterParameter='Email Notification Task'}"
+                                FontSize="14"/>
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
+            <!-- Dynamic Fields -->
+            <StackLayout IsVisible="{Binding IsFolderWatcherVisible}">
+                <Entry Placeholder="File Directory"
+                       Text="{Binding FileDirectory}"/>
+            </StackLayout>
+
+            <StackLayout IsVisible="{Binding IsFileCompressionVisible}">
+                <Entry Placeholder="File Directory"
+                       Text="{Binding FileDirectory}"/>
+            </StackLayout>
+
+            <StackLayout IsVisible="{Binding IsFileBackupVisible}">
+                <Entry Placeholder="Source Directory"
+                       Text="{Binding SourceDirectory}"/>
+                <Entry Placeholder="Target Directory"
+                       Text="{Binding TargetDirectory}"/>
+            </StackLayout>
+
+            <StackLayout IsVisible="{Binding IsEmailNotificationVisible}">
+                <Entry Placeholder="Sender Email"
+                       Text="{Binding SenderEmail}"/>
+                <Entry Placeholder="Receiver Email"
+                       Text="{Binding ReceiverEmail}"/>
+                <Entry Placeholder="Subject"
+                       Text="{Binding EmailSubject}"/>
+                <Editor Placeholder="Message Body"
+                        Text="{Binding EmailBody}"
+                        HeightRequest="100"/>
+            </StackLayout>
+            
+            <!-- Execution Time -->
+            <VerticalStackLayout Spacing="5">
+                <Label Text="Execution Time Settings"
+                       FontAttributes="Bold"/>
+                
+                <Label Text="Recurrence Pattern"/>
+                <HorizontalStackLayout Spacing="15">
+                    <RadioButton Content="One Time" 
+                                GroupName="RecurrenceGroup"
+                                IsChecked="{Binding RecurrencePattern, Converter={StaticResource StringToBoolConverter}, ConverterParameter='OneTime'}"/>
+                    <RadioButton Content="Minutely" 
+                                GroupName="RecurrenceGroup"
+                                IsChecked="{Binding RecurrencePattern, Converter={StaticResource StringToBoolConverter}, ConverterParameter='Minutely'}"/>
+                    <RadioButton Content="Hourly" 
+                                GroupName="RecurrenceGroup"
+                                IsChecked="{Binding RecurrencePattern, Converter={StaticResource StringToBoolConverter}, ConverterParameter='Hourly'}"/>
+                    <RadioButton Content="Daily" 
+                                GroupName="RecurrenceGroup"
+                                IsChecked="{Binding RecurrencePattern, Converter={StaticResource StringToBoolConverter}, ConverterParameter='Daily'}"/>
+                    <RadioButton Content="Weekly" 
+                                GroupName="RecurrenceGroup"
+                                IsChecked="{Binding RecurrencePattern, Converter={StaticResource StringToBoolConverter}, ConverterParameter='Weekly'}"/>
+                    <RadioButton Content="Monthly" 
+                                GroupName="RecurrenceGroup"
+                                IsChecked="{Binding RecurrencePattern, Converter={StaticResource StringToBoolConverter}, ConverterParameter='Monthly'}"/>
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
+            <!-- Time Selection -->
+            <VerticalStackLayout Spacing="10">
+                <HorizontalStackLayout Spacing="15">
+                    <DatePicker Date="{Binding ExecutionDate}"
+                                HorizontalOptions="Start"/>
+                    <TimePicker Time="{Binding ExecutionTime}"
+                                HorizontalOptions="Start"/>
+                </HorizontalStackLayout>
+
+                <HorizontalStackLayout Spacing="15" IsVisible="{Binding ShowNextRunTime}">
+                    <Label Text="Next Run Time" 
+                           FontAttributes="Bold"/>
+                    <DatePicker Date="{Binding NextRunDate}"
+                                HorizontalOptions="Start"/>
+                    <TimePicker Time="{Binding NextRunTimeSpan}"
+                                HorizontalOptions="Start"/>
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
+            <!-- Priority -->
+            <VerticalStackLayout Spacing="5">
+                <Label Text="Priority"
+                       FontAttributes="Bold"/>
+                <HorizontalStackLayout Spacing="20">
+                    <RadioButton Content="High" 
+                                GroupName="PriorityGroup"
+                                IsChecked="{Binding Priority, Converter={StaticResource StringToBoolConverter}, ConverterParameter='High'}"/>
+                    <RadioButton Content="Medium" 
+                                GroupName="PriorityGroup"
+                                IsChecked="{Binding Priority, Converter={StaticResource StringToBoolConverter}, ConverterParameter='Medium'}"/>
+                    <RadioButton Content="Low" 
+                                GroupName="PriorityGroup"
+                                IsChecked="{Binding Priority, Converter={StaticResource StringToBoolConverter}, ConverterParameter='Low'}"/>
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
+            <!-- Action Buttons -->
+            <Grid ColumnDefinitions="*,*"
+                  ColumnSpacing="10"
+                  Margin="0,20">
+                <Button Text="Confirm"
+                        Command="{Binding ConfirmCommand}"
+                        Grid.Column="0"
+                        BackgroundColor="#4CAF50"
+                        TextColor="White"
+                        CornerRadius="5"/>
+                
+                <Button Text="Cancel"
+                        Clicked="OnCancelClicked"
+                        Grid.Column="1"
+                        BackgroundColor="#9E9E9E"
+                        TextColor="White"
+                        CornerRadius="5"/>
+            </Grid>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
