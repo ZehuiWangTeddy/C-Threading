@@ -58,7 +58,7 @@ namespace TaskManager.Views
         
         private async void OnDetailsClicked(object sender, System.EventArgs e)
         {
-            // 暂时显示提示信息
+            // placeholder for task detail page
             await DisplayAlert("Coming Soon", "Task detail feature is under development", "OK");
         }
 

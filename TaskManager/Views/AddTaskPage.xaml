@@ -110,14 +110,6 @@
                                 HorizontalOptions="Start"/>
                 </HorizontalStackLayout>
 
-                <StackLayout IsVisible="{Binding ShowInterval}">
-                    <Label Text="Interval in Minutes" 
-                           FontAttributes="Bold"/>
-                    <Entry Placeholder="Interval in Minutes (Required for Daily/Weekly/Monthly)"
-                           Text="{Binding IntervalInMinutes}"
-                           Keyboard="Numeric"/>
-                </StackLayout>
-
                 <HorizontalStackLayout Spacing="15" IsVisible="{Binding ShowNextRunTime}">
                     <Label Text="Next Run Time" 
                            FontAttributes="Bold"/>

@@ -285,7 +285,6 @@ namespace TaskManager.Views
                 EmailBody = EmailBody,
                 ExecutionTime = ExecutionDate.Date.Add(ExecutionTime),
                 RecurrencePattern = RecurrencePattern,
-                IntervalInMinutes = IntervalInMinutes,
                 NextRunTime = NextRunDate.Date.Add(NextRunTimeSpan),
                 Priority = Priority
             };
