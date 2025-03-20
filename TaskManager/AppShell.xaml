@@ -7,9 +7,8 @@
     Shell.FlyoutBehavior="Disabled"
     Title="TaskManager">
 
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+    <ShellContent Title="Dashboard" ContentTemplate="{DataTemplate local:Dashboard}" />
+    <ShellContent Title="Graphs" ContentTemplate="{DataTemplate local:Graph}" />
 
 </Shell>
+

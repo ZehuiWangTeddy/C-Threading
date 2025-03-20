@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TaskManager.Dashboard"
+             BackgroundColor="White">
+    
+    <Grid RowDefinitions="*"
+          ColumnDefinitions="200, *">
+        
+        <!-- Sidebar (Navigation Menu) -->
+        <StackLayout Grid.Column="0" BackgroundColor="#D3D3D3" Padding="20">
+            <Label Text="Dashboard" FontSize="18" FontAttributes="Bold" Padding="5"/>
+            <Label Text="Task List" FontSize="18" Padding="5"/>
+            <Label Text="Task Details" FontSize="18" Padding="5"/>
+            <Button Text="View Graphs" Clicked="OnViewGraphsClicked" />
+        </StackLayout>
+
+        <!-- Main Content -->
+        <Grid Grid.Column="1" Padding="15">
+            
+            <!-- Bottom Section with Two Containers -->
+            <Grid ColumnDefinitions="*, *" ColumnSpacing="15">
+                
+                <!-- Total Tasks Container (Left) -->
+                <Frame Grid.Column="0" BackgroundColor="#D3D3D3" Padding="15" CornerRadius="10">
+                    <StackLayout>
+                        <Label Text="Total Task" FontSize="16" FontAttributes="Bold"/>
+                        <Label Text="10" FontSize="16"/>
+                        <Label Text="Successful Task" FontSize="16" FontAttributes="Bold"/>
+                        <Label Text="10" FontSize="16"/>
+                        <Label Text="Failed Task" FontSize="16" FontAttributes="Bold"/>
+                        <Label Text="10" FontSize="16"/>
+                    </StackLayout>
+                </Frame>
+
+                <!-- Recently Assigned Tasks Container (Right) -->
+                <Frame Grid.Column="1" BackgroundColor="#D3D3D3" Padding="15" CornerRadius="10">
+                    <StackLayout>
+                        <Label Text="Recently Assigned Task" FontSize="16" FontAttributes="Bold"/>
+                        <Label Text="1. Upload File" FontSize="14"/>
+                        <Label Text="2. Delete File" FontSize="14"/>
+                        <Label Text="3. ReUpload File" FontSize="14"/>
+                        <Label Text="4. Fix File" FontSize="14"/>
+                        <Label Text="5. Update File" FontSize="14"/>
+                        <Button Text="More" BackgroundColor="Red" TextColor="White" HorizontalOptions="End"/>
+                    </StackLayout>
+                </Frame>
+
+            </Grid>
+
+        </Grid>
+
+    </Grid>
+</ContentPage>
