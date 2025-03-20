@@ -1,9 +1,9 @@
 
-﻿using TaskManager.Repositories;
+using TaskManager.Repositories;
 using TaskManager.Models.DBModels;
 using SQLite;
 using System.IO;
-﻿using TaskManager.Views;
+using TaskManager.Views;
 
 namespace TaskManager
 {
@@ -17,6 +17,7 @@ namespace TaskManager
             InitializeDatabase();
 
             MainPage = new AppShell();
+            MainPage = new TaskListPage();
         }
 
         private void InitializeDatabase()
@@ -26,7 +27,4 @@ namespace TaskManager
             Console.WriteLine($"Database and tables created at {databasePath}");
         }
     }
-}
-		MainPage = new TaskListPage();
-	}
 }
