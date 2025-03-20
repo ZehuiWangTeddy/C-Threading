@@ -21,6 +21,10 @@ bld/
 [Bb]in/
 [Oo]bj/
 [Ll]og/
+TaskManager/obj
+obj
+.idea
+TaskManager/.idea
 
 # Visual Studio 2015 cache/options directory
 .vs/
