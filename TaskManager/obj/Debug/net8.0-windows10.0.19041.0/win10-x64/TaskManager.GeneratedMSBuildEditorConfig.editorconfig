@@ -1,4 +1,11 @@
 is_global = true
+build_property.MvvmToolkitEnableINotifyPropertyChangingSupport = true
+build_property._MvvmToolkitIsUsingWindowsRuntimePack = true
+build_property.CsWinRTComponent = 
+build_property.CsWinRTAotOptimizerEnabled = true
+build_property.CsWinRTAotOptimizerEnabled = true
+build_property.CsWinRTAotWarningLevel = 
+build_property.CsWinRTAotWarningLevel = 
 build_property.TargetFramework = net8.0-windows10.0.19041.0
 build_property.TargetPlatformMinVersion = 10.0.17763.0
 build_property.UsingMicrosoftNETSdkWeb = 
@@ -11,16 +18,24 @@ build_property.RootNamespace = TaskManager
 build_property.ProjectDir = C:\Users\atuma\Desktop\C-Threading\TaskManager\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
-build_property.CsWinRTAotOptimizerEnabled = true
 build_property.CsWinRTAotExportsEnabled = 
 build_property.CsWinRTRcwFactoryFallbackGeneratorForceOptIn = 
 build_property.CsWinRTRcwFactoryFallbackGeneratorForceOptOut = 
 build_property.CsWinRTCcwLookupTableGeneratorEnabled = true
 build_property.CsWinRTMergeReferencedActivationFactories = 
-build_property.CsWinRTAotWarningLevel = 
 build_property.CsWinRTUseWindowsUIXamlProjections = false
 build_property.EffectiveAnalysisLevelStyle = 8.0
 build_property.EnableCodeStyleSeverity = 
+
+[C:/Users/atuma/Desktop/C-Threading/TaskManager/Views/TaskDetails.xaml]
+build_metadata.AdditionalFiles.GenKind = 
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = 
+build_metadata.AdditionalFiles.ManifestResourceName = TaskManager.Views.TaskDetails.xaml
+build_metadata.AdditionalFiles.TargetPath = 
+build_metadata.AdditionalFiles.TargetPath = Views\TaskDetails.xaml
+build_metadata.AdditionalFiles.RelativePath = 
+build_metadata.AdditionalFiles.RelativePath = Views\TaskDetails.xaml
 
 [C:/Users/atuma/Desktop/C-Threading/TaskManager/App.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
@@ -52,8 +67,14 @@ build_metadata.AdditionalFiles.ManifestResourceName = TaskManager.Resources.Styl
 build_metadata.AdditionalFiles.TargetPath = Resources\Styles\Styles.xaml
 build_metadata.AdditionalFiles.RelativePath = Resources\Styles\Styles.xaml
 
-[C:/Users/atuma/Desktop/C-Threading/TaskManager/TaskDetails.xaml]
+[C:/Users/atuma/Desktop/C-Threading/TaskManager/Views/AddTaskPage.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
-build_metadata.AdditionalFiles.ManifestResourceName = TaskManager.TaskDetails.xaml
-build_metadata.AdditionalFiles.TargetPath = TaskDetails.xaml
-build_metadata.AdditionalFiles.RelativePath = TaskDetails.xaml
+build_metadata.AdditionalFiles.ManifestResourceName = TaskManager.Views.AddTaskPage.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\AddTaskPage.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\AddTaskPage.xaml
+
+[C:/Users/atuma/Desktop/C-Threading/TaskManager/Views/TaskListPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = TaskManager.Views.TaskListPage.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\TaskListPage.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\TaskListPage.xaml

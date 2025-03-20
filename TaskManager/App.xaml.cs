@@ -15,6 +15,7 @@ namespace TaskManager
         {
             InitializeComponent();
             InitializeDatabase();
+            
 
             MainPage = new AppShell();
             MainPage = new TaskListPage();
