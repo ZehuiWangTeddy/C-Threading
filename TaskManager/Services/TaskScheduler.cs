@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using TaskManager.Models;
 using TaskManager.Models.DBModels;
 using TaskManager.Models.Enums;
@@ -22,8 +17,8 @@ namespace TaskManager.Services
 
         public TaskScheduler(ITaskRepository taskRepository, ThreadPoolManager threadPoolManager)
         {
-            _taskRepository = taskRepository;
-            _threadPoolManager = threadPoolManager;
+            _taskRepository = taskRepository ?? throw new ArgumentNullException(nameof(taskRepository));
+            _threadPoolManager = threadPoolManager ?? throw new ArgumentNullException(nameof(threadPoolManager));
             _cancellationTokenSource = new CancellationTokenSource();
             _queueLock = new SemaphoreSlim(1, 1);
             _processedExecutionTimes = new HashSet<string>();
@@ -49,6 +44,8 @@ namespace TaskManager.Services
                     // Schedule tasks based on available slots
                     foreach (var task in pendingTasks.Take(availableSlots))
                     {
+                        if (task?.ExecutionTime == null) continue;
+
                         // Add to thread pool queue first
                         _threadPoolManager.AddTaskToQueue(task);
                         
@@ -78,27 +75,35 @@ namespace TaskManager.Services
             var now = DateTime.Now;
             var tasks = new List<BaseTask>();
 
-            // Get tasks from each type
+            // Get tasks from each type with null checks
             var emailTasks = _taskRepository.GetEmailTasks()
-                .Where(t => t.Status == StatusType.Pending && 
+                .Where(t => t != null && 
+                           t.Status == StatusType.Pending && 
+                           t.ExecutionTime != null &&
                            (t.ExecutionTime.NextExecutionTime <= now || 
                             t.ExecutionTime.OnceExecutionTime <= now))
                 .Cast<BaseTask>();
 
             var backupTasks = _taskRepository.GetFileBackupTasks()
-                .Where(t => t.Status == StatusType.Pending && 
+                .Where(t => t != null && 
+                           t.Status == StatusType.Pending && 
+                           t.ExecutionTime != null &&
                            (t.ExecutionTime.NextExecutionTime <= now || 
                             t.ExecutionTime.OnceExecutionTime <= now))
                 .Cast<BaseTask>();
 
             var compressionTasks = _taskRepository.GetCompressionTasks()
-                .Where(t => t.Status == StatusType.Pending && 
+                .Where(t => t != null && 
+                           t.Status == StatusType.Pending && 
+                           t.ExecutionTime != null &&
                            (t.ExecutionTime.NextExecutionTime <= now || 
                             t.ExecutionTime.OnceExecutionTime <= now))
                 .Cast<BaseTask>();
 
             var watcherTasks = _taskRepository.GetFolderWatcherTasks()
-                .Where(t => t.Status == StatusType.Pending && 
+                .Where(t => t != null && 
+                           t.Status == StatusType.Pending && 
+                           t.ExecutionTime != null &&
                            (t.ExecutionTime.NextExecutionTime <= now || 
                             t.ExecutionTime.OnceExecutionTime <= now))
                 .Cast<BaseTask>();
@@ -112,13 +117,14 @@ namespace TaskManager.Services
             // Filter out already processed execution times
             tasks = tasks.Where(t => 
             {
+                if (t?.ExecutionTime == null) return false;
                 var executionKey = $"{t.Id}_{t.ExecutionTime.NextExecutionTime?.Ticks ?? t.ExecutionTime.OnceExecutionTime?.Ticks ?? 0}";
                 return !_processedExecutionTimes.Contains(executionKey);
             }).ToList();
 
             // Order by execution time and priority
             return tasks
-                .OrderBy(t => t.ExecutionTime.NextExecutionTime ?? t.ExecutionTime.OnceExecutionTime)
+                .OrderBy(t => t.ExecutionTime?.NextExecutionTime ?? t.ExecutionTime?.OnceExecutionTime ?? DateTime.MaxValue)
                 .ThenByDescending(t => t.Priority)
                 .Take(MAX_TASKS_TO_FETCH)
                 .ToList();
