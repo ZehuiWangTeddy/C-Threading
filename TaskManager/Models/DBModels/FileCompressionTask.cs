@@ -18,6 +18,8 @@ public class FileCompressionTask : BaseTask
 
     public override void Execute()
     {
-        Console.WriteLine($"Compressing files from {FileDirectory}");
+        var message = $"File Compression Task: Compressing files in directory {FileDirectory}";
+        Logger.AddLogMessage(message);
+        Console.WriteLine(message);
     }
 }

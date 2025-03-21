@@ -1,3 +1,5 @@
+using System;
+
 namespace TaskManager.Models
 {
     public class TaskItem
@@ -5,7 +7,6 @@ namespace TaskManager.Models
         public string Name { get; set; }
         public string TaskType { get; set; }     
         public DateTime ExecutionTime { get; set; } 
-        
         public string FileDirectory { get; set; }
         public string SourceDirectory { get; set; }
         public string TargetDirectory { get; set; }

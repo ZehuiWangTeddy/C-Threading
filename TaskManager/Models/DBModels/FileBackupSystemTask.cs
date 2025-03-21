@@ -22,6 +22,8 @@ public class FileBackupSystemTask : BaseTask
 
     public override void Execute()
     {
-        Console.WriteLine($"Copying from {SourceDirectory} to {TargetDirectory}");
+        var message = $"File Backup Task: Copying files from {SourceDirectory} to {TargetDirectory}";
+        Logger.AddLogMessage(message);
+        Console.WriteLine(message);
     }
 }

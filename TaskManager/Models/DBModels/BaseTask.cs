@@ -4,7 +4,6 @@ using SQLiteNetExtensions.Attributes;
 
 namespace TaskManager.Models.DBModels;
 
-
 public abstract class BaseTask
 {
     [PrimaryKey, AutoIncrement]
@@ -28,7 +27,7 @@ public abstract class BaseTask
     public int? TaskLoggerId { get; set; }
 
     [OneToOne(CascadeOperations = CascadeOperation.All)]
-    public TaskLogger Logger { get; set; } // <-- This properly links TaskLogger
+    public TaskLogger Logger { get; set; }
 
     public BaseTask(string name, PriorityType priority)
     {

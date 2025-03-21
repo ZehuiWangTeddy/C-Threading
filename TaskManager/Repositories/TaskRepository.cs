@@ -4,6 +4,8 @@ using TaskManager.Models.Enums;
 using System.Collections.Generic;
 using System.Linq;
 using TaskManager.Models;
+using SQLiteNetExtensions.Extensions;
+using TaskManager.Services;
 
 namespace TaskManager.Repositories
 {
@@ -28,32 +30,95 @@ namespace TaskManager.Repositories
         {
             _sqliteConnection = new SQLiteConnection(dbPath);
             _sqliteConnection.Execute("PRAGMA foreign_keys = ON;");
+            
             _sqliteConnection.CreateTable<ExecutionTime>();
             _sqliteConnection.CreateTable<TaskLogger>();
             _sqliteConnection.CreateTable<EmailNotificationTask>();
             _sqliteConnection.CreateTable<FileBackupSystemTask>();
             _sqliteConnection.CreateTable<FileCompressionTask>();
             _sqliteConnection.CreateTable<FolderWatcherTask>();
+
+            InitializeDummyData();
+        }
+
+        private void InitializeDummyData()
+        {
+            // Create dummy EmailNotificationTask
+            var emailExecutionTime = new ExecutionTime(
+                onceExecutionTime: DateTime.Now.AddHours(1),
+                recurrencePattern: RecurrencePattern.OneTime,
+                nextExecutionTime: null
+            );
+            var emailLogger = new TaskLogger();
+            var emailTask = new EmailNotificationTask("Dummy Email Task", 0, PriorityType.High, "sender@example.com", "receiver@example.com", "Test Email", "This is a test email")
+            {
+                ExecutionTime = emailExecutionTime,
+                Logger = emailLogger
+            };
+            SaveTask(emailTask);
+
+            // Create dummy FileBackupSystemTask
+            var backupExecutionTime = new ExecutionTime(
+                onceExecutionTime: null,
+                recurrencePattern: RecurrencePattern.Daily,
+                nextExecutionTime: DateTime.Now.AddDays(1)
+            );
+            var backupLogger = new TaskLogger();
+            var backupTask = new FileBackupSystemTask("Dummy Backup Task", 0, PriorityType.Medium, "/path/to/source", "/path/to/backup")
+            {
+                ExecutionTime = backupExecutionTime,
+                Logger = backupLogger
+            };
+            SaveTask(backupTask);
+
+            // Create dummy FileCompressionTask
+            var compressionExecutionTime = new ExecutionTime(
+                onceExecutionTime: DateTime.Now.AddHours(2),
+                recurrencePattern: RecurrencePattern.OneTime,
+                nextExecutionTime: null
+            );
+            var compressionLogger = new TaskLogger();
+            var compressionTask = new FileCompressionTask("Dummy Compression Task", 0, PriorityType.Low, "/path/to/compress")
+            {
+                ExecutionTime = compressionExecutionTime,
+                Logger = compressionLogger
+            };
+            SaveTask(compressionTask);
+
+            // Create dummy FolderWatcherTask
+            var watcherExecutionTime = new ExecutionTime(
+                onceExecutionTime: null,
+                recurrencePattern: RecurrencePattern.Minute,
+                nextExecutionTime: DateTime.Now.AddMinutes(1)
+            );
+            var watcherLogger = new TaskLogger();
+            var watcherTask = new FolderWatcherTask("Dummy Watcher Task", 0, PriorityType.High, "/path/to/watch")
+            {
+                ExecutionTime = watcherExecutionTime,
+                Logger = watcherLogger
+            };
+            SaveTask(watcherTask);
+
+            Console.WriteLine("Dummy tasks created successfully!");
         }
 
         public void SaveTask(BaseTask task)
         {
-           
             if (task is EmailNotificationTask emailTask)
             {
-                _sqliteConnection.InsertOrReplace(emailTask);
+                _sqliteConnection.InsertWithChildren(emailTask, recursive: true);
             }
             else if (task is FileBackupSystemTask backupTask)
             {
-                _sqliteConnection.InsertOrReplace(backupTask);
+                _sqliteConnection.InsertWithChildren(backupTask, recursive: true);
             }
             else if (task is FileCompressionTask compressionTask)
             {
-                _sqliteConnection.InsertOrReplace(compressionTask);
+                _sqliteConnection.InsertWithChildren(compressionTask, recursive: true);
             }
             else if (task is FolderWatcherTask folderWatcherTask)
             {
-                _sqliteConnection.InsertOrReplace(folderWatcherTask);
+                _sqliteConnection.InsertWithChildren(folderWatcherTask, recursive: true);
             }
         }
 
