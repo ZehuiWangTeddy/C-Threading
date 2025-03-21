@@ -1,1 +1,0 @@
--v --force --timestamp=none --sign - --entitlements /Users/dtg/Desktop/C#/C-Threading/TaskManager/obj/Debug/net8.0-maccatalyst/maccatalyst-x64/Entitlements.xcent /Users/dtg/Desktop/C#/C-Threading/TaskManager/bin/Debug/net8.0-maccatalyst/maccatalyst-x64/TaskManager.app
