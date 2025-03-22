@@ -17,8 +17,8 @@ namespace TaskManager
             InitializeDatabase();
             
 
-            MainPage = new AppShell();
-            MainPage = new TaskListPage();
+            MainPage = new NavigationPage(new AppShell());
+            MainPage = new NavigationPage(new DashboardPage());
         }
 
         private void InitializeDatabase()
