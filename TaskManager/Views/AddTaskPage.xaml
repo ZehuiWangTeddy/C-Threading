@@ -103,21 +103,31 @@
 
             <!-- Time Selection -->
             <VerticalStackLayout Spacing="10">
-                <HorizontalStackLayout Spacing="15">
-                    <DatePicker Date="{Binding ExecutionDate}"
-                                HorizontalOptions="Start"/>
-                    <TimePicker Time="{Binding ExecutionTime}"
-                                HorizontalOptions="Start"/>
-                </HorizontalStackLayout>
-
-                <HorizontalStackLayout Spacing="15" IsVisible="{Binding ShowNextRunTime}">
-                    <Label Text="Next Run Time" 
+                <!-- Execution Time -->
+                <VerticalStackLayout Spacing="5">
+                    <Label Text="Execution Time" 
                            FontAttributes="Bold"/>
-                    <DatePicker Date="{Binding NextRunDate}"
-                                HorizontalOptions="Start"/>
-                    <TimePicker Time="{Binding NextRunTimeSpan}"
-                                HorizontalOptions="Start"/>
-                </HorizontalStackLayout>
+                    <HorizontalStackLayout Spacing="15">
+                        <DatePicker Date="{Binding ExecutionDate}"
+                                    HorizontalOptions="Start"/>
+                        <TimePicker Time="{Binding ExecutionTime}"
+                                    HorizontalOptions="Start"/>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+
+                <!-- Next Run Time -->
+                <VerticalStackLayout Spacing="5" IsVisible="{Binding ShowNextRunTime}">
+                    <Label Text="Next Run Time (Auto Calculated)" 
+                           FontAttributes="Bold"/>
+                    <HorizontalStackLayout Spacing="15">
+                        <Label Text="{Binding NextRunDate, StringFormat='{0:yyyy-MM-dd}'}"
+                               FontSize="14"
+                               VerticalOptions="Center"/>
+                        <Label Text="{Binding NextRunTimeSpan, StringFormat='{0:hh\\:mm}'}"
+                               FontSize="14"
+                               VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
             </VerticalStackLayout>
 
             <!-- Priority -->

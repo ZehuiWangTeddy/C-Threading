@@ -1,65 +1,150 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Microsoft.Maui.Controls;
-using TaskManager.Views;
-using TaskManager.Models; 
+using TaskManager.Models;
+using TaskManager.Repositories;
+using TaskManager.Services;
+using System.Diagnostics;
+using TaskManager.Models.DBModels;
 
 namespace TaskManager.Views
 {
     public partial class TaskListPage : ContentPage, INotifyPropertyChanged
     {
+        private readonly ITaskRepository _taskRepository;
         public ObservableCollection<TaskItem> Tasks { get; } = new();
 
-        public TaskListPage()
+        public TaskListPage(ITaskRepository taskRepository)
         {
             InitializeComponent();
             BindingContext = this;
+            _taskRepository = taskRepository;
             
-            // dummy data
-            Tasks.Add(new TaskItem { 
-                Name = "Project Meeting", 
-                TaskType = "Folder Watcher Task", 
-                ExecutionTime = DateTime.Now.AddHours(2)
-            });
-            
-            Tasks.Add(new TaskItem { 
-                Name = "Project Fighting", 
-                TaskType = "Folder Watcher Task", 
-                ExecutionTime = DateTime.Now.AddHours(5)
-            });
+            LoadInitialTasks();
+        }
+
+        private void LoadInitialTasks()
+        {
+            try
+            {
+                // load all task from DB
+                var dbTasks = _taskRepository.GetAllTasks();
+                
+                Tasks.Clear();
+                foreach (var task in ConvertDbTasks(dbTasks))
+                {
+                    Tasks.Add(task);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Load Task Faild: {ex.Message}");
+            }
         }
 
         private async void OnAddTaskClicked(object sender, EventArgs e)
         {
-            var addPage = new AddTaskPage();
-            addPage.TaskAdded += (s, task) => 
+            try
             {
-                Tasks.Add(task);
-            };
-            
-            await Navigation.PushModalAsync(new NavigationPage(addPage));
+                var addPage = new AddTaskPage(_taskRepository);
+                
+                addPage.TaskAdded += async (s, task) => 
+                {
+                    // reload newest task
+                    var freshTasks = _taskRepository.GetAllTasks();
+                    
+                    await MainThread.InvokeOnMainThreadAsync(() =>
+                    {
+                        Tasks.Clear();
+                        foreach (var t in ConvertDbTasks(freshTasks))
+                        {
+                            Tasks.Add(t);
+                        }
+                    });
+                };
+
+                await Navigation.PushModalAsync(addPage);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Open Page Faild: {ex.Message}");
+                await DisplayAlert("Error", "Cannot open add task page", "Confirm");
+            }
         }
 
         private void OnStartTask(object sender, EventArgs e)
         {
             if (sender is Button button && button.BindingContext is TaskItem task)
             {
-                DisplayAlert("Task Started", $"Starting: {task.Name}", "OK");
+                DisplayAlert("Task Start", $"Start: {task.Name}", "OK");
             }
         }
 
-        private void OnCancelTask(object sender, EventArgs e)
+        private async void OnCancelTask(object sender, EventArgs e)
         {
             if (sender is Button button && button.BindingContext is TaskItem task)
             {
-                Tasks.Remove(task);
+                bool confirm = await DisplayAlert("Confirm", $"Do you want to cancle {task.Name} ？", "YES", "NO");
+                if (confirm)
+                {
+                    _taskRepository.DeleteTask(task.Id);
+                    
+                    Tasks.Remove(task);
+                }
             }
         }
         
         private async void OnDetailsClicked(object sender, System.EventArgs e)
         {
-            // placeholder for task detail page
-            await DisplayAlert("Coming Soon", "Task detail feature is under development", "OK");
+            await DisplayAlert("On the way", "Page is cooking", "Confirm");
+        }
+
+        private List<TaskItem> ConvertDbTasks(IEnumerable<BaseTask> dbTasks)
+        {
+            var result = new List<TaskItem>();
+            
+            foreach (var dbTask in dbTasks)
+            {
+                var taskItem = new TaskItem
+                {
+                    Id = dbTask.Id,
+                    Name = dbTask.Name,
+                    ExecutionTime = dbTask.ExecutionTime?.OnceExecutionTime ?? DateTime.MinValue,
+                    Priority = dbTask.Priority.ToString(),
+                    Status = dbTask.Status.ToString()
+                };
+
+                switch (dbTask)
+                {
+                    case FolderWatcherTask folderTask:
+                        taskItem.TaskType = "Folder Watcher Task";
+                        taskItem.FileDirectory = folderTask.FolderDirectory;
+                        break;
+                        
+                    case FileCompressionTask compTask:
+                        taskItem.TaskType = "File Compression Task";
+                        taskItem.FileDirectory = compTask.FileDirectory;
+                        break;
+                        
+                    case FileBackupSystemTask backupTask:
+                        taskItem.TaskType = "File Backup System Task";
+                        taskItem.SourceDirectory = backupTask.SourceDirectory;
+                        taskItem.TargetDirectory = backupTask.TargetDirectory;
+                        break;
+                        
+                    case EmailNotificationTask emailTask:
+                        taskItem.TaskType = "Email Notification Task";
+                        taskItem.SenderEmail = emailTask.SenderEmail;
+                        taskItem.ReceiverEmail = emailTask.RecipientEmail;
+                        taskItem.EmailSubject = emailTask.Subject;
+                        taskItem.EmailBody = emailTask.MessageBody;
+                        break;
+                }
+                
+                result.Add(taskItem);
+            }
+            
+            return result;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

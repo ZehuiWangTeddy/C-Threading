@@ -13,6 +13,12 @@ namespace TaskManager.Repositories
         List<BaseTask> GetTasks(StatusType status);
         BaseTask? GetTaskById(int taskId);
         void UpdateTaskStatus(int taskId, StatusType status);
+        
+        void SaveExecutionTime(ExecutionTime executionTime);
+        ExecutionTime GetExecutionTime(int id);
+        
+        List<BaseTask> GetAllTasks();
+        void DeleteTask(int taskId);
 
         List<EmailNotificationTask> GetEmailTasks();
         List<FileBackupSystemTask> GetFileBackupTasks();
@@ -36,6 +42,16 @@ namespace TaskManager.Repositories
             _sqliteConnection.CreateTable<FolderWatcherTask>();
         }
 
+        public void SaveExecutionTime(ExecutionTime executionTime)
+        {
+            _sqliteConnection.InsertOrReplace(executionTime);
+        }
+
+        public ExecutionTime GetExecutionTime(int id)
+        {
+            return _sqliteConnection.Find<ExecutionTime>(id);
+        }
+        
         public void SaveTask(BaseTask task)
         {
            
@@ -82,6 +98,21 @@ namespace TaskManager.Repositories
             return folderWatcherTask;
         }
 
+        public List<BaseTask> GetAllTasks()
+        {
+            var tasks = new List<BaseTask>();
+            tasks.AddRange(_sqliteConnection.Table<FolderWatcherTask>().ToList());
+            tasks.AddRange(_sqliteConnection.Table<FileCompressionTask>().ToList());
+            tasks.AddRange(_sqliteConnection.Table<FileBackupSystemTask>().ToList());
+            tasks.AddRange(_sqliteConnection.Table<EmailNotificationTask>().ToList());
+            return tasks;
+        }
+
+        public void DeleteTask(int taskId)
+        {
+            _sqliteConnection.Delete<BaseTask>(taskId);
+        }
+        
         public void UpdateTaskStatus(int taskId, StatusType status)
         {
             var task = GetTaskById(taskId);

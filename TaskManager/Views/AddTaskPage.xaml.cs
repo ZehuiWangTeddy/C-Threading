@@ -1,29 +1,34 @@
+using Microsoft.Maui.Controls;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Input;
-using Microsoft.Maui.Controls;
 using TaskManager.Models;
+using TaskManager.Models.DBModels;
+using TaskManager.Models.Enums;
+using TaskManager.Repositories;
+using TaskManager.Services;
+using TaskManager.Extensions;
 
 namespace TaskManager.Views
 {
     public partial class AddTaskPage : ContentPage, INotifyPropertyChanged
     {
+        private readonly ITaskRepository _taskRepository;
+
         public event EventHandler<TaskItem> TaskAdded;
 
+        #region Bindable Properties
         private string _selectedTaskType;
         public string SelectedTaskType
         {
             get => _selectedTaskType;
             set
             {
-                if (_selectedTaskType != value)
-                {
-                    _selectedTaskType = value;
-                    OnPropertyChanged(nameof(SelectedTaskType));
-                    UpdateDynamicFieldsVisibility();
-                    Debug.WriteLine($"Selected Task Type: {value}");
-                }
+                _selectedTaskType = value;
+                OnPropertyChanged(nameof(SelectedTaskType));
+                UpdateDynamicFieldsVisibility();
+                Debug.WriteLine($"Selected Task Type: {value}");
             }
         }
 
@@ -131,36 +136,46 @@ namespace TaskManager.Views
             {
                 _executionDate = value;
                 OnPropertyChanged();
+                CalculateNextRunTime();
             }
         }
 
         private TimeSpan _executionTime = DateTime.Now.TimeOfDay;
-        public TimeSpan ExecutionTime
+        public TimeSpan ExecutionTimeSpan
         {
             get => _executionTime;
             set
             {
                 _executionTime = value;
                 OnPropertyChanged();
+                CalculateNextRunTime();
             }
         }
 
-        private DateTime _nextRunDate = DateTime.Now;
+        // public static class DateTimeExtensions
+        // {
+        //     public static DateTime RoundToMinutes(this DateTime dt)
+        //     {
+        //         return new DateTime(dt.Year, dt.Month, dt.Day, dt.Hour, dt.Minute, 0);
+        //     }
+        // }
+        
+        private DateTime _nextRunDate;
         public DateTime NextRunDate
         {
             get => _nextRunDate;
-            set
+            private set
             {
                 _nextRunDate = value;
                 OnPropertyChanged();
             }
         }
 
-        private TimeSpan _nextRunTimeSpan = DateTime.Now.TimeOfDay;
+        private TimeSpan _nextRunTimeSpan;
         public TimeSpan NextRunTimeSpan
         {
             get => _nextRunTimeSpan;
-            set
+            private set
             {
                 _nextRunTimeSpan = value;
                 OnPropertyChanged();
@@ -176,28 +191,12 @@ namespace TaskManager.Views
                 _recurrencePattern = value;
                 OnPropertyChanged();
                 UpdateTimeFieldsVisibility();
+                CalculateNextRunTime();
             }
         }
-
-        public bool ShowInterval => 
-            RecurrencePattern == "Daily" || 
-            RecurrencePattern == "Weekly" || 
-            RecurrencePattern == "Monthly";
 
         public bool ShowNextRunTime => RecurrencePattern != "OneTime";
 
-        private int _intervalInMinutes;
-        public int IntervalInMinutes
-        {
-            get => _intervalInMinutes;
-            set
-            {
-                _intervalInMinutes = value;
-                OnPropertyChanged();
-            }
-        }
-
-        // Priority
         private string _priority = "Medium";
         public string Priority
         {
@@ -208,88 +207,169 @@ namespace TaskManager.Views
                 OnPropertyChanged();
             }
         }
+        #endregion
 
         public ICommand ConfirmCommand { get; }
 
-        public AddTaskPage()
+        public AddTaskPage(ITaskRepository taskRepository)
         {
             InitializeComponent();
+            _taskRepository = taskRepository;
             BindingContext = this;
 
-            ConfirmCommand = new Command(() =>
+            ConfirmCommand = new Command(async () =>
             {
                 if (ValidateInput())
                 {
-                    TaskAdded?.Invoke(this, CreateTaskItem());
-                    Navigation.PopModalAsync();
+                    await SaveTaskToDatabase();
+                    await Navigation.PopModalAsync();
                 }
             });
         }
 
+        #region Database Operations
+        private async Task SaveTaskToDatabase()
+        {
+            try
+            {
+                // 1. Create executionTime
+                var executionTime = new ExecutionTime(
+                    onceExecutionTime: RecurrencePattern == "OneTime" ? ExecutionDate.Date.Add(ExecutionTimeSpan) : null,
+                    recurrencePattern: Enum.Parse<RecurrencePattern>(RecurrencePattern),
+                    intervalInMinutes: null,
+                    nextExecutionTime: NextRunDate.Date.Add(NextRunTimeSpan)
+                );
+
+                _taskRepository.SaveExecutionTime(executionTime);
+
+                // 2. Create Task type
+                var baseTask = TaskConverter.ConvertToDbTask(new TaskItem
+                {
+                    Name = TaskName,
+                    TaskType = SelectedTaskType,
+                    FileDirectory = FileDirectory,
+                    SourceDirectory = SourceDirectory,
+                    TargetDirectory = TargetDirectory,
+                    SenderEmail = SenderEmail,
+                    ReceiverEmail = ReceiverEmail,
+                    EmailSubject = EmailSubject,
+                    EmailBody = EmailBody,
+                    ExecutionTime = ExecutionDate.Date.Add(ExecutionTimeSpan),
+                    RecurrencePattern = RecurrencePattern,
+                    NextRunTime = NextRunDate.Date.Add(NextRunTimeSpan),
+                    Priority = Priority
+                }, executionTime.Id);
+                
+                _taskRepository.SaveTask(baseTask);
+                
+                TaskAdded?.Invoke(this, new TaskItem
+                {
+                    Name = TaskName,
+                    ExecutionTime = ExecutionDate.Date.Add(ExecutionTimeSpan)
+                });
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Error", $"Save Faild: {ex.Message}", "OK");
+            }
+        }
+        #endregion
+
+        #region Time Calculation
+        private void CalculateNextRunTime()
+        {
+            if (string.IsNullOrEmpty(RecurrencePattern)) return;
+
+            var baseTime = ExecutionDate.Date.Add(ExecutionTimeSpan);
+    
+            switch (RecurrencePattern)
+            {
+                case "Minutely":
+                    UpdateNextRun(baseTime.AddMinutes(1));
+                    break;
+                case "Hourly":
+                    UpdateNextRun(baseTime.AddHours(1));
+                    break;
+                case "Daily":
+                    UpdateNextRun(baseTime.AddDays(1));
+                    break;
+                case "Weekly":
+                    UpdateNextRun(baseTime.AddDays(7));
+                    break;
+                case "Monthly":
+                    UpdateNextRun(baseTime.AddMonths(1));
+                    break;
+                default:
+                    NextRunDate = DateTime.MinValue;
+                    NextRunTimeSpan = TimeSpan.Zero;
+                    break;
+            }
+        }
+        #endregion
+
+        #region Validation
         private bool ValidateInput()
         {
-            if (ShowInterval && IntervalInMinutes <= 0)
-            {
-                return ShowError("Interval must be greater than 0");
-            }
-            
             if (string.IsNullOrWhiteSpace(TaskName))
             {
-                DisplayAlert("Error", "Task name is required", "OK");
+                DisplayAlert("Error", "Please input task name", "OK");
                 return false;
             }
-
+            
+            var executionDateTime = ExecutionDate.Date.Add(ExecutionTimeSpan);
+            var now = DateTime.Now.RoundToMinutes();
+            
+            if (executionDateTime <= DateTime.Now)
+            {
+                DisplayAlert("Error", "Execution time cannot early than now", "OK");
+                return false;
+            }
+            
+            if (ShowNextRunTime)
+            {
+                var nextRunDateTime = NextRunDate.Date.Add(NextRunTimeSpan);
+                if (nextRunDateTime <= executionDateTime)
+                {
+                    DisplayAlert("Error", "Next run time must late than execution time", "OK");
+                    return false;
+                }
+            }
+            
             switch (SelectedTaskType)
             {
                 case "Folder Watcher Task":
                 case "File Compression Task":
                     if (string.IsNullOrWhiteSpace(FileDirectory))
-                        return ShowError("File directory is required");
+                    {
+                        DisplayAlert("Error", "Input File Directory ", "OK");
+                        return false;
+                    }
                     break;
 
                 case "File Backup System Task":
-                    if (string.IsNullOrWhiteSpace(SourceDirectory) || 
-                        string.IsNullOrWhiteSpace(TargetDirectory))
-                        return ShowError("Source and Target directories are required");
+                    if (string.IsNullOrWhiteSpace(SourceDirectory) || string.IsNullOrWhiteSpace(TargetDirectory))
+                    {
+                        DisplayAlert("Error", "Input SourceDirectory and TargetDirectory", "OK");
+                        return false;
+                    }
                     break;
 
                 case "Email Notification Task":
                     if (string.IsNullOrWhiteSpace(SenderEmail) || 
                         string.IsNullOrWhiteSpace(ReceiverEmail) ||
                         string.IsNullOrWhiteSpace(EmailSubject))
-                        return ShowError("Email fields are required");
+                    {
+                        DisplayAlert("Error", "Input SenderEmail, ReceiverEmail and EmailSubject", "OK");
+                        return false;
+                    }
                     break;
             }
 
             return true;
         }
+        #endregion
 
-        private bool ShowError(string message)
-        {
-            DisplayAlert("Validation Error", message, "OK");
-            return false;
-        }
-
-        private TaskItem CreateTaskItem()
-        {
-            return new TaskItem
-            {
-                Name = TaskName,
-                TaskType = SelectedTaskType,
-                FileDirectory = FileDirectory,
-                SourceDirectory = SourceDirectory,
-                TargetDirectory = TargetDirectory,
-                SenderEmail = SenderEmail,
-                ReceiverEmail = ReceiverEmail,
-                EmailSubject = EmailSubject,
-                EmailBody = EmailBody,
-                ExecutionTime = ExecutionDate.Date.Add(ExecutionTime),
-                RecurrencePattern = RecurrencePattern,
-                NextRunTime = NextRunDate.Date.Add(NextRunTimeSpan),
-                Priority = Priority
-            };
-        }
-
+        #region Helper Methods
         private void UpdateDynamicFieldsVisibility()
         {
             OnPropertyChanged(nameof(IsFolderWatcherVisible));
@@ -297,10 +377,9 @@ namespace TaskManager.Views
             OnPropertyChanged(nameof(IsFileBackupVisible));
             OnPropertyChanged(nameof(IsEmailNotificationVisible));
         }
-
+        
         private void UpdateTimeFieldsVisibility()
         {
-            OnPropertyChanged(nameof(ShowInterval));
             OnPropertyChanged(nameof(ShowNextRunTime));
         }
 
@@ -315,7 +394,16 @@ namespace TaskManager.Views
                 await DisplayAlert("Error", ex.Message, "OK");
             }
         }
+        #endregion
 
+        private void UpdateNextRun(DateTime nextTime)
+        {
+            NextRunDate = nextTime.Date;
+            NextRunTimeSpan = nextTime.TimeOfDay.RoundToMinutes();
+            OnPropertyChanged(nameof(NextRunDate));
+            OnPropertyChanged(nameof(NextRunTimeSpan));
+        }
+        
         public event PropertyChangedEventHandler PropertyChanged;
         protected virtual void OnPropertyChanged(string propertyName = null)
         {

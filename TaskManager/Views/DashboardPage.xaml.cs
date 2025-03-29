@@ -2,6 +2,8 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using TaskManager.Repositories;
 
 namespace TaskManager.Views
 {
@@ -19,8 +21,24 @@ namespace TaskManager.Views
 
         private async void OnTaskListClicked(object sender, EventArgs e)
         {
-            await Navigation.PushAsync(new TaskListPage());
+            try
+            {
+                var repository = ServiceProvider.GetService<ITaskRepository>();
+                
+                var taskListPage = new TaskListPage(repository);
+                
+                await Navigation.PushAsync(taskListPage);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Navigation failed: {ex.Message}");
+                await DisplayAlert("Error", "Unable to open task list", "Confirm");
+            }
         }
+        
+        private IServiceProvider ServiceProvider => 
+            Application.Current.MainPage?.Handler?.MauiContext?.Services 
+            ?? throw new InvalidOperationException("Unable to obtain service provider");
 
         private async void OnTaskDetailClicked(object sender, EventArgs e)
         {

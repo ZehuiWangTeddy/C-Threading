@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Handlers;
+using TaskManager.Repositories;
 
 namespace TaskManager;
 
@@ -18,7 +19,11 @@ public static class MauiProgram
 			.ConfigureMauiHandlers(handlers =>
 			{
 				handlers.AddHandler<RadioButton, RadioButtonHandler>(); 
-			});;
+			})		
+			.Services.AddSingleton<ITaskRepository>(provider => 
+				new TaskRepository(Path.Combine(
+					Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+					"TaskManager.db")));;;
 
 #if DEBUG
 		builder.Logging.AddDebug();
