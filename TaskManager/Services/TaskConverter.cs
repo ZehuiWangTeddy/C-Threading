@@ -14,20 +14,29 @@ namespace TaskManager.Services
                     name: taskItem.Name,
                     executionTimeId: executionTimeId,
                     priority: Enum.Parse<PriorityType>(taskItem.Priority),
-                    folderDirectory: taskItem.FileDirectory),
+                    folderDirectory: taskItem.FileDirectory)
+                {
+                    ExecutionTime = CreateExecutionTime(taskItem),
+                },
 
                 "File Compression Task" => new FileCompressionTask(
                     name: taskItem.Name,
                     executionTimeId: executionTimeId,
                     priority: Enum.Parse<PriorityType>(taskItem.Priority),
-                    fileDirectory: taskItem.FileDirectory),
+                    fileDirectory: taskItem.FileDirectory)
+                {
+                    ExecutionTime = CreateExecutionTime(taskItem),
+                },
 
                 "File Backup System Task" => new FileBackupSystemTask(
                     name: taskItem.Name,
                     executionTimeId: executionTimeId,
                     priority: Enum.Parse<PriorityType>(taskItem.Priority),
                     targetDirectory: taskItem.TargetDirectory,
-                    sourceDirectory: taskItem.SourceDirectory),
+                    sourceDirectory: taskItem.SourceDirectory)
+                {
+                    ExecutionTime = CreateExecutionTime(taskItem),
+                },
 
                 "Email Notification Task" => new EmailNotificationTask(
                     name: taskItem.Name,
@@ -36,7 +45,10 @@ namespace TaskManager.Services
                     senderEmail: taskItem.SenderEmail,
                     recipientEmail: taskItem.ReceiverEmail,
                     subject: taskItem.EmailSubject,
-                    messageBody: taskItem.EmailBody),
+                    messageBody: taskItem.EmailBody)
+                {
+                    ExecutionTime = CreateExecutionTime(taskItem),
+                },
 
                 _ => throw new ArgumentException("Invalid task type")
             };
@@ -44,9 +56,20 @@ namespace TaskManager.Services
 
         public static ExecutionTime CreateExecutionTime(TaskItem taskItem)
         {
+            //Todo Can Mergers
+
+            var recurrencePattern = Enum.Parse<RecurrencePattern>(taskItem.RecurrencePattern);
+            if (recurrencePattern == RecurrencePattern.OneTime)
+            {
+                return new ExecutionTime(
+                    onceExecutionTime: taskItem.ExecutionTime,
+                    recurrencePattern: recurrencePattern,
+                    intervalInMinutes: null,
+                    nextExecutionTime: null);
+            }
             return new ExecutionTime(
-                onceExecutionTime: taskItem.RecurrencePattern == "OneTime" ? taskItem.ExecutionTime : null,
-                recurrencePattern: Enum.Parse<RecurrencePattern>(taskItem.RecurrencePattern),
+                onceExecutionTime: null,
+                recurrencePattern: recurrencePattern,
                 intervalInMinutes: null, 
                 nextExecutionTime: taskItem.NextRunTime);
         }

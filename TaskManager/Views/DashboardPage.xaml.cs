@@ -25,7 +25,7 @@ namespace TaskManager.Views
             {
                 var repository = ServiceProvider.GetService<ITaskRepository>();
                 
-                var taskListPage = new TaskListPage(repository);
+                var taskListPage = new TaskListPage();
                 
                 await Navigation.PushAsync(taskListPage);
             }

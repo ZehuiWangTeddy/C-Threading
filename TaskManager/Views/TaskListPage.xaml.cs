@@ -6,64 +6,35 @@ using TaskManager.Repositories;
 using TaskManager.Services;
 using System.Diagnostics;
 using TaskManager.Models.DBModels;
+using TaskManager.ViewModels;
+using CommunityToolkit.Mvvm.Messaging;
+using TaskManager.Messages;
+using static TaskManager.Messages.DbOperationMessage;
+using System.Threading.Tasks;
+using TaskManager.Models.Enums;
 
 namespace TaskManager.Views
 {
-    public partial class TaskListPage : ContentPage, INotifyPropertyChanged
+    public partial class TaskListPage : ContentPage
     {
-        private readonly ITaskRepository _taskRepository;
-        public ObservableCollection<TaskItem> Tasks { get; } = new();
 
-        public TaskListPage(ITaskRepository taskRepository)
+        public TaskListPage()
         {
             InitializeComponent();
-            BindingContext = this;
-            _taskRepository = taskRepository;
-            
-            LoadInitialTasks();
+            var dataContext = IPlatformApplication.Current?.Services.GetRequiredService<TaskListViewModel>();
+            BindingContext = dataContext;
         }
 
-        private void LoadInitialTasks()
-        {
-            try
-            {
-                // load all task from DB
-                var dbTasks = _taskRepository.GetAllTasks();
-                
-                Tasks.Clear();
-                foreach (var task in ConvertDbTasks(dbTasks))
-                {
-                    Tasks.Add(task);
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Load Task Faild: {ex.Message}");
-            }
-        }
+
 
         private async void OnAddTaskClicked(object sender, EventArgs e)
         {
             try
             {
-                var addPage = new AddTaskPage(_taskRepository);
-                
-                addPage.TaskAdded += async (s, task) => 
                 {
-                    // reload newest task
-                    var freshTasks = _taskRepository.GetAllTasks();
-                    
-                    await MainThread.InvokeOnMainThreadAsync(() =>
-                    {
-                        Tasks.Clear();
-                        foreach (var t in ConvertDbTasks(freshTasks))
-                        {
-                            Tasks.Add(t);
-                        }
-                    });
-                };
-
-                await Navigation.PushModalAsync(addPage);
+                    var addPage = new AddTaskPage();
+                    await Navigation.PushModalAsync(addPage);
+                }
             }
             catch (Exception ex)
             {
@@ -72,11 +43,19 @@ namespace TaskManager.Views
             }
         }
 
-        private void OnStartTask(object sender, EventArgs e)
+        private async void OnStartTask(object sender, EventArgs e)
         {
             if (sender is Button button && button.BindingContext is TaskItem task)
             {
-                DisplayAlert("Task Start", $"Start: {task.Name}", "OK");
+                if(task.Status == StatusType.Completed)
+                {
+                    await DisplayAlert("Task Completed", $"Task {task.Name} has been completed", "OK");
+                    return;
+                }
+                await DisplayAlert("Task Start", $"Start: {task.Name}", "OK");
+
+                WeakReferenceMessenger.Default.Send(new DbOperationMessage(nameof(TaskListPage), nameof(TaskListViewModel), task, OperationType.Update));
+
             }
         }
 
@@ -84,73 +63,25 @@ namespace TaskManager.Views
         {
             if (sender is Button button && button.BindingContext is TaskItem task)
             {
+                if (task.Status == StatusType.Completed)
+                {
+                    await DisplayAlert("Task Completed", $"Task {task.Name} has been completed", "OK");
+                    return;
+                }
                 bool confirm = await DisplayAlert("Confirm", $"Do you want to cancle {task.Name} ？", "YES", "NO");
                 if (confirm)
                 {
-                    _taskRepository.DeleteTask(task.Id);
-                    
-                    Tasks.Remove(task);
+                    WeakReferenceMessenger.Default.Send(new DbOperationMessage(nameof(TaskListPage), nameof(TaskListViewModel), task, OperationType.Delete));
                 }
             }
         }
-        
+
         private async void OnDetailsClicked(object sender, System.EventArgs e)
         {
             await DisplayAlert("On the way", "Page is cooking", "Confirm");
         }
 
-        private List<TaskItem> ConvertDbTasks(IEnumerable<BaseTask> dbTasks)
-        {
-            var result = new List<TaskItem>();
-            
-            foreach (var dbTask in dbTasks)
-            {
-                var taskItem = new TaskItem
-                {
-                    Id = dbTask.Id,
-                    Name = dbTask.Name,
-                    ExecutionTime = dbTask.ExecutionTime?.OnceExecutionTime ?? DateTime.MinValue,
-                    Priority = dbTask.Priority.ToString(),
-                    Status = dbTask.Status.ToString()
-                };
 
-                switch (dbTask)
-                {
-                    case FolderWatcherTask folderTask:
-                        taskItem.TaskType = "Folder Watcher Task";
-                        taskItem.FileDirectory = folderTask.FolderDirectory;
-                        break;
-                        
-                    case FileCompressionTask compTask:
-                        taskItem.TaskType = "File Compression Task";
-                        taskItem.FileDirectory = compTask.FileDirectory;
-                        break;
-                        
-                    case FileBackupSystemTask backupTask:
-                        taskItem.TaskType = "File Backup System Task";
-                        taskItem.SourceDirectory = backupTask.SourceDirectory;
-                        taskItem.TargetDirectory = backupTask.TargetDirectory;
-                        break;
-                        
-                    case EmailNotificationTask emailTask:
-                        taskItem.TaskType = "Email Notification Task";
-                        taskItem.SenderEmail = emailTask.SenderEmail;
-                        taskItem.ReceiverEmail = emailTask.RecipientEmail;
-                        taskItem.EmailSubject = emailTask.Subject;
-                        taskItem.EmailBody = emailTask.MessageBody;
-                        break;
-                }
-                
-                result.Add(taskItem);
-            }
-            
-            return result;
-        }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged(string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
     }
 }
