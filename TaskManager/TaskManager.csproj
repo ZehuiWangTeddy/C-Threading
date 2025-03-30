@@ -68,4 +68,21 @@
 		<PackageReference Include="SQLiteNetExtensions" Version="2.1.0" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <MauiXaml Update="Views\TaskDetails.xaml">
+	    <SubType>Designer</SubType>
+	  </MauiXaml>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="Views\TaskDetails.xaml.cs">
+	    <DependentUpon>TaskDetails.xaml</DependentUpon>
+	    <SubType>Code</SubType>
+	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <AdditionalFiles Include="Views\TaskDetails.xaml" />
+	</ItemGroup>
+
 </Project>
