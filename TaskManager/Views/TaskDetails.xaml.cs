@@ -9,4 +9,9 @@ public partial class TaskDetails : ContentPage
         InitializeComponent();
         BindingContext = task; // Bind this page to the task details
     }
+
+    private async void OnBackButtonClicked(object sender, EventArgs e)
+    {
+        await Navigation.PopModalAsync();
+    }
 }
