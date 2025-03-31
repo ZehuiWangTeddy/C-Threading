@@ -76,12 +76,29 @@ namespace TaskManager.Views
             }
         }
 
-        private async void OnDetailsClicked(object sender, System.EventArgs e)
+         private async void OnDetailsClicked(object sender, EventArgs e)
         {
-            await DisplayAlert("On the way", "Page is cooking", "Confirm");
+            if (sender is Button button && button.BindingContext is TaskItem task)
+            {
+                var taskLog = new TaskLog
+                {
+                    TaskName = task.Name,
+                    ExecutionTime = task.ExecutionTime.ToString("HH:mm:ss"),
+                    Priority = TaskPriority.Medium, // Example priority
+                    Status = TaskStatus.Pending, // Example status
+                    ThreadId = 1, // Example thread ID
+                    ExecutionLog = "Example log" // Example log
+                };
+        
+                await Navigation.PushModalAsync(new NavigationPage(new TaskDetails(taskLog)));
+            }
+        }   
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged(string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-
-
 
     }
 }
