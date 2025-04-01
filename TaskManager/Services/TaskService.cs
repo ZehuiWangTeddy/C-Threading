@@ -18,7 +18,7 @@ namespace TaskManager.Services
         {
             _threadPoolManager = threadPoolManager ?? throw new ArgumentNullException(nameof(threadPoolManager));
             _taskRepository = taskRepository ?? throw new ArgumentNullException(nameof(taskRepository));
-            _taskScheduler = new TaskScheduler(taskRepository, threadPoolManager);
+            // _taskScheduler = new TaskScheduler(taskRepository, threadPoolManager);
         }
 
         public void AddTask(BaseTask task)
@@ -38,10 +38,10 @@ namespace TaskManager.Services
             _taskRepository.UpdateTaskStatus(taskId, status);
         }
 
-        public void StopScheduler()
-        {
-            _taskScheduler?.Dispose();
-        }
+        // public void StopScheduler()
+        // {
+        //     _taskScheduler?.Dispose();
+        // }
 
         protected virtual void Dispose(bool disposing)
         {
@@ -50,7 +50,7 @@ namespace TaskManager.Services
                 if (disposing)
                 {
                     // Dispose managed resources
-                    _taskScheduler?.Dispose();
+                    // _taskScheduler?.Dispose();
                     _threadPoolManager?.Dispose();
                 }
 

@@ -17,9 +17,26 @@ public abstract class BaseTask
     [OneToOne(CascadeOperations = CascadeOperation.All)]
     public ExecutionTime ExecutionTime { get; set; } 
 
-    public PriorityType Priority { get; set; }
-
-    public StatusType Status { get; private set; } = StatusType.Pending;
+  
+    [Column("PriorityValue")]
+    public int PriorityValue { get; set; }
+    
+    [Column("StatusValue")]
+    public int StatusValue { get; set; }
+    
+    [Ignore]
+    public PriorityType Priority 
+    { 
+        get => (PriorityType)PriorityValue; 
+        set => PriorityValue = (int)value; 
+    }
+    
+    [Ignore]
+    public StatusType Status 
+    { 
+        get => (StatusType)StatusValue; 
+        set => StatusValue = (int)value; 
+    }
 
     public int? ThreadId { get; set; }
 
@@ -33,6 +50,7 @@ public abstract class BaseTask
     {
         Name = name;
         Priority = priority;
+        Status = StatusType.Pending;
     }
 
     public abstract void Execute();

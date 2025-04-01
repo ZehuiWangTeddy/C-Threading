@@ -3,7 +3,6 @@ using TaskManager.Repositories;
 using TaskManager.Models;
 using TaskManager.Views;
 using TaskManager.Services;
-using TaskScheduler = TaskManager.Services.TaskScheduler;
 
 namespace TaskManager
 {
@@ -12,7 +11,6 @@ namespace TaskManager
         private const string DatabaseFileName = "TaskManager.db";
         private ThreadPoolManager _threadPoolManager;
         private ITaskRepository _taskRepository;
-        private TaskScheduler _taskScheduler;
         private TaskService _taskService;
         private bool _disposed;
 
@@ -20,9 +18,10 @@ namespace TaskManager
         {
             InitializeComponent();
             InitializeDatabase();
+            
 
-            MainPage = new AppShell();
-            MainPage = new TaskListPage();
+            MainPage = new NavigationPage(new AppShell());
+            MainPage = new NavigationPage(new DashboardPage());
         }
 
         private void InitializeDatabase()
@@ -37,7 +36,6 @@ namespace TaskManager
             
             // Initialize TaskService and TaskScheduler (both need repository and thread pool)
             _taskService = new TaskService(_threadPoolManager, _taskRepository);
-            _taskScheduler = new TaskScheduler(_taskRepository, _threadPoolManager);
             
             Console.WriteLine($"Database and tables created at {databasePath}");
             Console.WriteLine("TaskScheduler initialized and running");
@@ -47,8 +45,6 @@ namespace TaskManager
         {
             base.OnSleep();
             // Clean up resources when app goes to background
-            _taskService?.StopScheduler();
-            _taskScheduler?.Dispose();
             _threadPoolManager?.Dispose();
         }
 
@@ -56,10 +52,7 @@ namespace TaskManager
         {
             base.OnResume();
             // Reinitialize components when app resumes
-            if (_taskRepository != null && _threadPoolManager != null)
-            {
-                _taskScheduler = new TaskScheduler(_taskRepository, _threadPoolManager);
-            }
+          
         }
 
         protected virtual void Dispose(bool disposing)
@@ -70,7 +63,6 @@ namespace TaskManager
                 {
                     // Dispose managed resources
                     _taskService?.Dispose();
-                    _taskScheduler?.Dispose();
                     _threadPoolManager?.Dispose();
                 }
 
