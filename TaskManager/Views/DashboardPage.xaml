@@ -64,7 +64,7 @@
                     <Label Text="3. ReUpload File" TextColor="Black"/>
                     <Label Text="4. Fix File" TextColor="Black"/>
                     <Label Text="5. Update File" TextColor="Black"/>
-                    <Button Text="More" BackgroundColor="Red" TextColor="White" Padding="10" Margin="10"/>
+                    <Button Text="More" BackgroundColor="Red" TextColor="White" Clicked="OnTaskListClicked" Padding="10" Margin="10"/>
                 </StackLayout>
             </Frame>
         </Grid>

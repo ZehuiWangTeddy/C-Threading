@@ -32,5 +32,15 @@ namespace TaskManager.Services
         {
             _taskRepository.UpdateTaskStatus(taskId, status); 
         }
+        
+        public int GetCompletedTasks()
+        {
+            return _taskRepository.GetTasks(StatusType.Completed).Count;
+        }
+
+        public int GetFailedTasks()
+        {
+            return _taskRepository.GetTasks(StatusType.Failed).Count;
+        }
     }
 }

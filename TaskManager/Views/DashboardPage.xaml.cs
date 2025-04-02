@@ -24,7 +24,19 @@ namespace TaskManager.Views
 
         private async void OnTaskDetailClicked(object sender, EventArgs e)
         {
-            // await Navigation.PushAsync(new TaskDetailPage());
+            if (sender is Button button)
+            {
+                var selectedTask = button.BindingContext as TaskLog;
+                if (selectedTask != null)
+                {
+                    await Navigation.PushAsync(new TaskDetails(selectedTask));
+                }
+                else
+                {
+                    // Debugging: Check if the button has a BindingContext
+                    await DisplayAlert("Error", "No task selected.", "OK");
+                }
+            }
         }
     }
 

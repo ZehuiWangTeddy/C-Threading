@@ -1,4 +1,5 @@
 
+using System.Diagnostics;
 using TaskManager.Repositories;
 using TaskManager.Models.DBModels;
 using SQLite;
@@ -16,8 +17,6 @@ namespace TaskManager
             InitializeComponent();
             InitializeDatabase();
             
-
-            MainPage = new NavigationPage(new AppShell());
             MainPage = new NavigationPage(new DashboardPage());
         }
 
@@ -25,7 +24,7 @@ namespace TaskManager
         {
             var databasePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), DatabaseFileName);
             var taskRepository = new TaskRepository(databasePath);
-            Console.WriteLine($"Database and tables created at {databasePath}");
+            Debug.WriteLine($"Database and tables created at {databasePath}");
         }
     }
 }
