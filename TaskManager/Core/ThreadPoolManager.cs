@@ -14,6 +14,9 @@ namespace TaskManager.Models
         // Task queue storing pending tasks (thread-safe with lock)
         private readonly List<BaseTask> _taskQueue = new();
         
+        // Set to track tasks currently in the queue by ID (for fast lookups)
+        private readonly HashSet<int> _tasksInQueue = new();
+        
         // Task repository to fetch and update task states
         private readonly ITaskRepository _taskRepository;
         
@@ -23,10 +26,13 @@ namespace TaskManager.Models
         // Cancellation token for stopping background tasks
         private readonly CancellationTokenSource _cancellationTokenSource = new();
         
+        // Flag to indicate disposal state
+        private volatile bool _isDisposed = false;
+        
         // Constants
         private const int MAX_QUEUE_SIZE = 50;
         private const int MAX_THREADS = 10;
-        private const int FETCH_INTERVAL_MS = 1000; // 1 second
+        private const int FETCH_INTERVAL_MS = 60000; // 1 minute
         
         /// <summary>
         /// Initializes the ThreadPoolManager and starts the background task fetcher.
@@ -35,92 +41,102 @@ namespace TaskManager.Models
         {
             _taskRepository = taskRepository ?? throw new ArgumentNullException(nameof(taskRepository));
 
-            // Start background thread to fetch tasks every second
+            // Start background thread to fetch tasks every minute
             Task.Run(FetchAndQueueTasks, _cancellationTokenSource.Token);
         }
 
         /// <summary>
         /// Periodically fetches new tasks from the database and adds them to the queue.
         /// </summary>
-  private async Task FetchAndQueueTasks()
-{
-    try
-    {
-        while (!_cancellationTokenSource.Token.IsCancellationRequested)
+        private async Task FetchAndQueueTasks()
         {
+            Console.WriteLine("Fetching tasks...");
             try
             {
-                // Fetch tasks due for execution within the next 5 seconds
-                var now = DateTime.Now;
-                var nextFiveSeconds = now.AddSeconds(5000);
-                
-                Console.WriteLine($"Fetching tasks for {nextFiveSeconds}");
-
-                var tasks = _taskRepository.GetTasks(StatusType.Pending)
-                    // .Where(t =>
-                    //      t.ExecutionTime != null && 
-                    //      ((t.ExecutionTime.NextExecutionTime != null && t.ExecutionTime.NextExecutionTime <= nextFiveSeconds) || 
-                    //       (t.ExecutionTime.OnceExecutionTime != null && t.ExecutionTime.OnceExecutionTime <= nextFiveSeconds)))
-                    .OrderBy(t => t.ExecutionTime?.NextExecutionTime ?? t.ExecutionTime?.OnceExecutionTime)
-                    .Take(MAX_QUEUE_SIZE)
-                    .ToList();
-                
-                Console.WriteLine($"Fetched tasks: {tasks.Count}");
-
-                lock (_lock)
+                while (!_isDisposed && !_cancellationTokenSource.Token.IsCancellationRequested)
                 {
-                    // Add new tasks to the queue if space is available
-                    foreach (var task in tasks)
+                    try
                     {
-                        if (_taskQueue.Count >= MAX_QUEUE_SIZE) break;
-                        _taskQueue.Add(task);
-                        Console.WriteLine($"Queued task: {task.Name}");
+                        var now = DateTime.Now;
+                        var nextMinute = now.AddMinutes(1); 
+
+                        var tasks = _taskRepository.GetTasks(StatusType.Pending)
+                            .Where(t =>
+                                t.ExecutionTime != null && 
+                                ((t.ExecutionTime.NextExecutionTime != null && t.ExecutionTime.NextExecutionTime <= nextMinute) || 
+                                (t.ExecutionTime.OnceExecutionTime != null && t.ExecutionTime.OnceExecutionTime <= nextMinute)))
+                            .OrderBy(t => t.ExecutionTime?.NextExecutionTime ?? t.ExecutionTime?.OnceExecutionTime)
+                            .Take(MAX_QUEUE_SIZE)
+                            .ToList();
+
+                        lock (_lock)
+                        {
+                            foreach (var task in tasks)
+                            {
+                                // Skip tasks that are already in the queue
+                                if (_tasksInQueue.Contains(task.Id))
+                                {
+                                    Console.WriteLine($"Task {task.Name} (ID: {task.Id}) already in queue, skipping");
+                                    continue;
+                                }
+                                
+                                if (_taskQueue.Count >= MAX_QUEUE_SIZE) 
+                                    break;
+                                
+                                _taskQueue.Add(task);
+                                _tasksInQueue.Add(task.Id); // Track the task ID
+                                Console.WriteLine($"Queued task: {task.Name} (ID: {task.Id})");
+                            }
+                        }
+                        
+                        if (!_isDisposed)
+                        {
+                            try
+                            {
+                                await Task.Delay(FETCH_INTERVAL_MS, _cancellationTokenSource.Token);
+                            }
+                            catch (OperationCanceledException)
+                            {
+                                break;
+                            }
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        break;
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error fetching tasks: {ex.Message}");
+                        if (!_isDisposed)
+                        {
+                            await Task.Delay(1000);
+                        }
                     }
                 }
-                
-                // Create a local copy of the token to prevent race conditions
-                CancellationToken token = _cancellationTokenSource.Token;
-                
-                // Wait before fetching again
-                await Task.Delay(FETCH_INTERVAL_MS, token);
-            }
-            catch (OperationCanceledException)
-            {
-                // This is expected when cancellation occurs
-                break;
-            }
-            catch (ObjectDisposedException)
-            {
-                // Token was disposed, exit loop
-                break;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error fetching tasks: {ex.Message}");
-                
-                // Add a delay to prevent tight loop in case of persistent errors
-                await Task.Delay(1000);
+                Console.WriteLine($"Fatal error in FetchAndQueueTasks: {ex.Message}");
             }
         }
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Fatal error in FetchAndQueueTasks: {ex.Message}");
-    }
-}
 
         /// <summary>
         /// Starts the worker threads that execute tasks from the queue.
         /// </summary>
-        public void StartProcessing()
+        public void StartProcessingTasks()
         {
             for (int i = 0; i < MAX_THREADS; i++)
             {
-                var workerThread = new Thread(ProcessQueuedTasks)
+                var thread = new Thread(ProcessQueuedTasks)
                 {
                     IsBackground = true // Ensure the thread stops when the app exits
                 };
-                workerThread.Start();
+                thread.Start();
             }
         }
 
@@ -129,8 +145,27 @@ namespace TaskManager.Models
         /// </summary>
         private void ProcessQueuedTasks()
         {
-            while (!_cancellationTokenSource.Token.IsCancellationRequested)
+            while (!_isDisposed)
             {
+                // Check cancellation token safely
+                bool isCancellationRequested = false;
+                try
+                {
+                    if (!_isDisposed)
+                    {
+                        isCancellationRequested = _cancellationTokenSource.Token.IsCancellationRequested;
+                    }
+                }
+                catch (ObjectDisposedException)
+                {
+                    break; // Exit the loop if the token source is disposed
+                }
+
+                if (isCancellationRequested)
+                {
+                    break;
+                }
+
                 BaseTask? taskToExecute = null;
 
                 lock (_lock)
@@ -145,6 +180,7 @@ namespace TaskManager.Models
                         if (taskToExecute != null)
                         {
                             _taskQueue.Remove(taskToExecute);
+                            _tasksInQueue.Remove(taskToExecute.Id); // Remove from tracking set
                         }
                     }
                 }
@@ -189,11 +225,11 @@ namespace TaskManager.Models
 
                 // Save updated task state
                 _taskRepository.SaveTask(task);
-                Console.WriteLine($"Task {task.Name} completed on thread {Thread.CurrentThread.ManagedThreadId}");
+                Console.WriteLine($"Task {task.Name} (ID: {task.Id}) completed on thread {Thread.CurrentThread.ManagedThreadId}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error executing task {task.Name}: {ex.Message}");
+                Console.WriteLine($"Error executing task {task.Name} (ID: {task.Id}): {ex.Message}");
                 task.SetStatus(StatusType.Failed);
                 _taskRepository.SaveTask(task);
             }
@@ -204,12 +240,20 @@ namespace TaskManager.Models
         /// </summary>
         public void Dispose()
         {
+            if (_isDisposed)
+                return;
+
+            _isDisposed = true; // Set this flag first to signal all threads to stop
+
             try 
             {
                 if (_cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested) 
                 {
                     _cancellationTokenSource.Cancel();
                 }
+                
+                // Give threads a moment to recognize cancellation before disposing
+                Thread.Sleep(100);
             }
             catch (ObjectDisposedException ex)
             {

@@ -13,7 +13,7 @@ namespace TaskManager.Models
 
         public DateTime? OnceExecutionTime { get; set; }
         public RecurrencePattern? RecurrencePattern { get; set; }
-        public int? IntervalInMinutes { get; private set; }
+        public int? IntervalInMinutes { get; set; }
         public DateTime? NextExecutionTime { get; set; }
 
         public ExecutionTime() { }

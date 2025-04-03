@@ -39,6 +39,7 @@ namespace TaskManager
             
             Console.WriteLine($"Database and tables created at {databasePath}");
             Console.WriteLine("TaskScheduler initialized and running");
+            _threadPoolManager.StartProcessingTasks();
         }
 
         protected override void OnSleep()
