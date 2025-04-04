@@ -2,7 +2,10 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Microsoft.Maui.Controls;
 using TaskManager.Views;
-using TaskManager.Models; 
+using TaskManager.Models;
+using TaskManager.Repositories;
+using TaskManager.Services;
+using TaskManager;
 
 namespace TaskManager.Views
 {
@@ -58,23 +61,14 @@ namespace TaskManager.Views
             }
         }
         
-        private async void OnDetailsClicked(object sender, EventArgs e)
-        {
-            if (sender is Button button && button.BindingContext is TaskItem task)
-            {
-                var taskLog = new TaskLog
-                {
-                    TaskName = task.Name,
-                    ExecutionTime = task.ExecutionTime.ToString("HH:mm:ss"),
-                    Priority = TaskPriority.Medium, // Example priority
-                    Status = TaskStatus.Pending, // Example status
-                    ThreadId = 1, // Example thread ID
-                    ExecutionLog = "Example log" // Example log
-                };
-        
-                await Navigation.PushModalAsync(new NavigationPage(new TaskDetails(taskLog)));
-            }
-        }   
+private async void OnDetailsClicked(object sender, EventArgs e)
+{
+    if (sender is Button button && button.BindingContext is TaskItem task)
+    {
+        var taskDetailsService = new TaskDetailsService(new TaskRepository(App.DatabasePath)); // Use App.DatabasePath
+        await Navigation.PushModalAsync(new NavigationPage(new TaskDetails(taskDetailsService, task.Id))); // Pass task.Id
+    }
+}
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected virtual void OnPropertyChanged(string propertyName = null)
