@@ -17,8 +17,8 @@ public class FolderWatcherTask : BaseTask
     
     public override void Execute()
     {
-        var message = $"Folder Watcher Task: Monitoring folder {FolderDirectory} for changes";
+        DateTime date = DateTime.Now;
+        var message = $"{date}: Folder Watcher Task: Monitoring folder {FolderDirectory} for changes";
         Logger.AddLogMessage(message);
-        Console.WriteLine(message);
     }
 }

@@ -127,7 +127,6 @@ namespace TaskManager.Repositories
     
             Debug.WriteLine($"{(isNewTask ? "Inserted" : "Updated")} task ID: {task.Id}, Count: {count}");
         }
-
        public List<BaseTask> GetTasks(StatusType status)
 {
     Debug.WriteLine("Fetching tasks...");
@@ -169,6 +168,11 @@ namespace TaskManager.Repositories
             {
                 task.ExecutionTime = GetExecutionTime(task.ExecutionTimeId.Value);
             }
+            
+            if (task.TaskLoggerId.HasValue)
+            {
+                task.Logger = _sqliteConnection.Find<TaskLogger>(task.TaskLoggerId.Value);
+            }
         }
         Debug.WriteLine($"Backup Tasks Count: {backupTasks.Count}");
 
@@ -183,6 +187,11 @@ namespace TaskManager.Repositories
             {
                 task.ExecutionTime = GetExecutionTime(task.ExecutionTimeId.Value);
             }
+            
+            if (task.TaskLoggerId.HasValue)
+            {
+                task.Logger = _sqliteConnection.Find<TaskLogger>(task.TaskLoggerId.Value);
+            }
         }
         Debug.WriteLine($"Compression Tasks Count: {compressionTasks.Count}");
 
@@ -195,6 +204,11 @@ namespace TaskManager.Repositories
             if (task.ExecutionTimeId.HasValue)
             {
                 task.ExecutionTime = GetExecutionTime(task.ExecutionTimeId.Value);
+            }
+            
+            if (task.TaskLoggerId.HasValue)
+            {
+                task.Logger = _sqliteConnection.Find<TaskLogger>(task.TaskLoggerId.Value);
             }
         }
         Debug.WriteLine($"Folder Watcher Tasks Count: {folderWatcherTasks.Count}");
@@ -357,9 +371,6 @@ namespace TaskManager.Repositories
                     throw new System.Exception("Convert Error");
             }
             Debug.WriteLine($"Update Count:{count}");
-
-           
-
         }
     }
 }

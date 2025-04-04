@@ -6,33 +6,26 @@ using System.Threading.Tasks;
 using TaskManager.Models.DBModels;
 using TaskManager.Models.Enums;
 using TaskManager.Repositories;
+using TaskManager.Services;
 
 namespace TaskManager.Models
 {
     public class ThreadPoolManager : IDisposable
     {
-        // Task queue storing pending tasks (thread-safe with lock)
         private readonly List<BaseTask> _taskQueue = new();
-        
-        // Set to track tasks currently in the queue by ID (for fast lookups)
         private readonly HashSet<int> _tasksInQueue = new();
-        
-        // Task repository to fetch and update task states
+        private List<Thread> _workerThreads = new List<Thread>();
+        private volatile bool _isPaused = false;
         private readonly ITaskRepository _taskRepository;
-        
-        // Lock object for thread synchronization
+        private readonly TaskUpdateService _taskUpdateService;
         private readonly object _lock = new();
-        
-        // Cancellation token for stopping background tasks
         private readonly CancellationTokenSource _cancellationTokenSource = new();
-        
-        // Flag to indicate disposal state
         private volatile bool _isDisposed = false;
         
-        // Constants
         private const int MAX_QUEUE_SIZE = 50;
         private const int MAX_THREADS = 10;
-        private const int FETCH_INTERVAL_MS = 60000; // 1 minute
+        private const int FETCH_INTERVAL_MS = 5000; 
+        private const int PROCESS_INTERVAL_MS = 1000; 
         
         /// <summary>
         /// Initializes the ThreadPoolManager and starts the background task fetcher.
@@ -40,8 +33,8 @@ namespace TaskManager.Models
         public ThreadPoolManager(ITaskRepository taskRepository)
         {
             _taskRepository = taskRepository ?? throw new ArgumentNullException(nameof(taskRepository));
-
-            // Start background thread to fetch tasks every minute
+            _taskUpdateService = new TaskUpdateService(_taskRepository);
+            
             Task.Run(FetchAndQueueTasks, _cancellationTokenSource.Token);
         }
 
@@ -50,7 +43,6 @@ namespace TaskManager.Models
         /// </summary>
         private async Task FetchAndQueueTasks()
         {
-            Console.WriteLine("Fetching tasks...");
             try
             {
                 while (!_isDisposed && !_cancellationTokenSource.Token.IsCancellationRequested)
@@ -58,7 +50,7 @@ namespace TaskManager.Models
                     try
                     {
                         var now = DateTime.Now;
-                        var nextMinute = now.AddMinutes(1); 
+                        var nextMinute = now.AddMinutes(5); 
 
                         var tasks = _taskRepository.GetTasks(StatusType.Pending)
                             .Where(t =>
@@ -73,10 +65,8 @@ namespace TaskManager.Models
                         {
                             foreach (var task in tasks)
                             {
-                                // Skip tasks that are already in the queue
                                 if (_tasksInQueue.Contains(task.Id))
                                 {
-                                    Console.WriteLine($"Task {task.Name} (ID: {task.Id}) already in queue, skipping");
                                     continue;
                                 }
                                 
@@ -84,8 +74,9 @@ namespace TaskManager.Models
                                     break;
                                 
                                 _taskQueue.Add(task);
-                                _tasksInQueue.Add(task.Id); // Track the task ID
-                                Console.WriteLine($"Queued task: {task.Name} (ID: {task.Id})");
+                                _tasksInQueue.Add(task.Id); 
+                                
+                                _taskUpdateService.NotifyTaskUpdated(task);
                             }
                         }
                         
@@ -130,12 +121,16 @@ namespace TaskManager.Models
         /// </summary>
         public void StartProcessingTasks()
         {
+            _workerThreads.Clear();
             for (int i = 0; i < MAX_THREADS; i++)
             {
                 var thread = new Thread(ProcessQueuedTasks)
                 {
-                    IsBackground = true // Ensure the thread stops when the app exits
+                    IsBackground = true,
+                    Name = $"TaskProcessor-{i}"
                 };
+        
+                _workerThreads.Add(thread);
                 thread.Start();
             }
         }
@@ -145,55 +140,66 @@ namespace TaskManager.Models
         /// </summary>
         private void ProcessQueuedTasks()
         {
-            while (!_isDisposed)
+            try
             {
-                // Check cancellation token safely
-                bool isCancellationRequested = false;
-                try
+                
+                while (!_isDisposed)
                 {
-                    if (!_isDisposed)
+                    try
                     {
-                        isCancellationRequested = _cancellationTokenSource.Token.IsCancellationRequested;
-                    }
-                }
-                catch (ObjectDisposedException)
-                {
-                    break; // Exit the loop if the token source is disposed
-                }
+                        if (_isDisposed || _cancellationTokenSource.IsCancellationRequested)
+                        {
+                            break;
+                        }
 
-                if (isCancellationRequested)
-                {
-                    break;
-                }
+                        if (_isPaused)
+                        {
+                            Thread.Sleep(1000);
+                            continue;
+                        }
 
-                BaseTask? taskToExecute = null;
+                        BaseTask? taskToExecute = null;
 
-                lock (_lock)
-                {
-                    // Pick a task if available and execution time has arrived
-                    if (_taskQueue.Count > 0)
-                    {
-                        var now = DateTime.Now;
-                        taskToExecute = _taskQueue.FirstOrDefault(task =>
-                            (task.ExecutionTime?.NextExecutionTime ?? task.ExecutionTime?.OnceExecutionTime) <= now);
+                        lock (_lock)
+                        {
+                            if (_taskQueue.Count > 0)
+                            {
+                                var now = DateTime.Now;
+                                taskToExecute = _taskQueue.FirstOrDefault(task =>
+                                    (task.ExecutionTime?.NextExecutionTime ?? task.ExecutionTime?.OnceExecutionTime) <= now);
+
+                                if (taskToExecute != null)
+                                {
+                                    _taskQueue.Remove(taskToExecute);
+                                    _tasksInQueue.Remove(taskToExecute.Id);
+                                }
+                            }
+                        }
 
                         if (taskToExecute != null)
                         {
-                            _taskQueue.Remove(taskToExecute);
-                            _tasksInQueue.Remove(taskToExecute.Id); // Remove from tracking set
+                            ExecuteTask(taskToExecute);
                         }
+                        Thread.Sleep(1000);
+                    }
+                    catch (ThreadAbortException)
+                    {
+                        throw;
+                    }
+                    catch (ObjectDisposedException ex)
+                    {
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        // Sleep briefly after errors
+                        Thread.Sleep(1000);
                     }
                 }
-
-                if (taskToExecute != null)
-                {
-                    ExecuteTask(taskToExecute);
-                }
-                else
-                {
-                    // Avoid busy-waiting; sleep briefly before checking again
-                    Thread.Sleep(500);
-                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Thread {Thread.CurrentThread.Name} fatal error: {ex.Message}\nStack trace: {ex.StackTrace}");
             }
         }
 
@@ -204,34 +210,37 @@ namespace TaskManager.Models
         {
             try
             {
-                // Mark as running and save state
                 task.SetStatus(StatusType.Running);
                 task.ThreadId = Thread.CurrentThread.ManagedThreadId;
                 _taskRepository.SaveTask(task);
+                _taskUpdateService.NotifyStatusChanged(task);
 
-                // Execute the task logic
                 task.Execute();
-
-                // Update status based on recurrence
-                if (task.ExecutionTime.RecurrencePattern != RecurrencePattern.OneTime)
+                
+                if (task.ExecutionTime?.RecurrencePattern != RecurrencePattern.OneTime)
                 {
                     task.ExecutionTime.CalculateNextExecutionTime();
                     task.SetStatus(StatusType.Pending);
+                    task.Logger.AddLogMessage($"Task completed on thread {Thread.CurrentThread.ManagedThreadId} and task will run again at {task.ExecutionTime.NextExecutionTime}");
+                    _taskUpdateService.NotifyExecutionTimeChanged(task);
+                    _taskUpdateService.NotifyLogAdded(task);
                 }
                 else
                 {
                     task.SetStatus(StatusType.Completed);
                 }
-
-                // Save updated task state
+                
                 _taskRepository.SaveTask(task);
-                Console.WriteLine($"Task {task.Name} (ID: {task.Id}) completed on thread {Thread.CurrentThread.ManagedThreadId}");
+                _taskUpdateService.NotifyTaskUpdated(task);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error executing task {task.Name} (ID: {task.Id}): {ex.Message}");
+                string errorMessage = $"Error executing task {task.Name} (ID: {task.Id}): {ex.Message}";
+                task.Logger.AddLogMessage($"ERROR: {errorMessage}");
                 task.SetStatus(StatusType.Failed);
                 _taskRepository.SaveTask(task);
+                _taskUpdateService.NotifyStatusChanged(task);
+                _taskUpdateService.NotifyLogAdded(task);
             }
         }
 
@@ -243,21 +252,18 @@ namespace TaskManager.Models
             if (_isDisposed)
                 return;
 
-            _isDisposed = true; // Set this flag first to signal all threads to stop
+            Console.WriteLine("ThreadPoolManager disposing... Stack trace:");
+            Console.WriteLine(Environment.StackTrace); 
+            _isDisposed = true;
 
             try 
             {
                 if (_cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested) 
                 {
                     _cancellationTokenSource.Cancel();
+                    Console.WriteLine("Cancellation requested");
                 }
-                
-                // Give threads a moment to recognize cancellation before disposing
-                Thread.Sleep(100);
-            }
-            catch (ObjectDisposedException ex)
-            {
-                Console.WriteLine($"CancellationTokenSource was already disposed: {ex.Message}");
+                Thread.Sleep(200);
             }
             catch (Exception ex)
             {
@@ -268,12 +274,23 @@ namespace TaskManager.Models
                 try
                 {
                     _cancellationTokenSource?.Dispose();
+                    Console.WriteLine("ThreadPoolManager disposed");
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Error disposing CancellationTokenSource: {ex.Message}");
                 }
             }
+        }
+        
+        public void PauseProcessing()
+        {
+            _isPaused = true;
+        }
+
+        public void ResumeProcessing()
+        {
+            _isPaused = false;
         }
     }
 }

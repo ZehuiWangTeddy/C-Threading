@@ -3,6 +3,8 @@ using TaskManager.Repositories;
 using TaskManager.Models;
 using TaskManager.Views;
 using TaskManager.Services;
+using TaskManager.ViewModels;
+using Microsoft.Maui.Controls;
 
 namespace TaskManager
 {
@@ -10,16 +12,18 @@ namespace TaskManager
     {
         private const string DatabaseFileName = "TaskManager.db";
         private ThreadPoolManager _threadPoolManager;
-        private ITaskRepository _taskRepository;
         private TaskService _taskService;
+        private ITaskRepository _taskRepository;
+        private TaskUpdateService _taskUpdateService;
+        private TaskPollingService _taskPollingService;
         private bool _disposed;
 
         public App()
         {
             InitializeComponent();
             InitializeDatabase();
-            
 
+            
             MainPage = new NavigationPage(new AppShell());
             MainPage = new NavigationPage(new DashboardPage());
         }
@@ -28,31 +32,32 @@ namespace TaskManager
         {
             var databasePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), DatabaseFileName);
             
-            // Initialize TaskRepository first (no dependencies)
             _taskRepository = new TaskRepository(databasePath);
-            
-            // Initialize ThreadPoolManager with repository
+            _taskUpdateService = new TaskUpdateService(_taskRepository);
+            _taskPollingService = new TaskPollingService(_taskRepository, _taskUpdateService);
             _threadPoolManager = new ThreadPoolManager(_taskRepository);
-            
-            // Initialize TaskService and TaskScheduler (both need repository and thread pool)
             _taskService = new TaskService(_threadPoolManager, _taskRepository);
-            
             Console.WriteLine($"Database and tables created at {databasePath}");
-            Console.WriteLine("TaskScheduler initialized and running");
+            
             _threadPoolManager.StartProcessingTasks();
+            Console.WriteLine("ThreadPoolManager initialized and running");
+            
         }
 
         protected override void OnSleep()
         {
             base.OnSleep();
-            // Clean up resources when app goes to background
-            _threadPoolManager?.Dispose();
+            // Remove or comment out this line if it's causing problems
+            // _threadPoolManager?.Dispose();
+    
+            // Instead, use this if you want to temporarily pause
+            Console.WriteLine("App going to sleep - NOT disposing ThreadPoolManager");
         }
-
         protected override void OnResume()
         {
             base.OnResume();
             // Reinitialize components when app resumes
+            _threadPoolManager?.ResumeProcessing();
           
         }
 
@@ -63,8 +68,9 @@ namespace TaskManager
                 if (disposing)
                 {
                     // Dispose managed resources
-                    _taskService?.Dispose();
+                    _taskPollingService?.Dispose();
                     _threadPoolManager?.Dispose();
+                    _taskUpdateService?.Dispose();
                 }
 
                 // Clean up unmanaged resources and override finalizer

@@ -1,4 +1,6 @@
 using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using SQLite;
 using SQLiteNetExtensions.Attributes;
 using TaskManager.Models.DBModels;
@@ -6,15 +8,74 @@ using TaskManager.Models.Enums;
 
 namespace TaskManager.Models
 {
-    public class ExecutionTime
+    public class ExecutionTime : INotifyPropertyChanged
     {
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
 
-        public DateTime? OnceExecutionTime { get; set; }
-        public RecurrencePattern? RecurrencePattern { get; set; }
-        public int? IntervalInMinutes { get; set; }
-        public DateTime? NextExecutionTime { get; set; }
+        private DateTime? _onceExecutionTime;
+        public DateTime? OnceExecutionTime 
+        { 
+            get => _onceExecutionTime;
+            set
+            {
+                if (_onceExecutionTime != value)
+                {
+                    _onceExecutionTime = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        
+        private RecurrencePattern? _recurrencePattern;
+        public RecurrencePattern? RecurrencePattern 
+        { 
+            get => _recurrencePattern;
+            set
+            {
+                if (_recurrencePattern != value)
+                {
+                    _recurrencePattern = value;
+                    OnPropertyChanged();
+                    SetIntervalBasedOnPattern();
+                }
+            }
+        }
+        
+        private int? _intervalInMinutes;
+        public int? IntervalInMinutes 
+        { 
+            get => _intervalInMinutes;
+            set
+            {
+                if (_intervalInMinutes != value)
+                {
+                    _intervalInMinutes = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        
+        private DateTime? _nextExecutionTime;
+        public DateTime? NextExecutionTime 
+        { 
+            get => _nextExecutionTime;
+            set
+            {
+                if (_nextExecutionTime != value)
+                {
+                    _nextExecutionTime = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
         public ExecutionTime() { }
 
@@ -52,11 +113,10 @@ namespace TaskManager.Models
                 NextExecutionTime = now.AddMinutes(IntervalInMinutes.Value);
                 return;
             }
-
-            // Calculate next execution time based on the interval
+            
             NextExecutionTime = NextExecutionTime.Value.AddMinutes(IntervalInMinutes.Value);
 
-            // If the calculated time is in the past, adjust it to the future
+           
             if (NextExecutionTime <= now)
             {
                 var timeDiff = now - NextExecutionTime.Value;
