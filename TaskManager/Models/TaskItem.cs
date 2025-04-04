@@ -1,3 +1,5 @@
+using TaskManager.Models.Enums;
+
 namespace TaskManager.Models
 {
     public class TaskItem
@@ -19,6 +21,9 @@ namespace TaskManager.Models
         // public int IntervalInMinutes { get; set; }
         public DateTime NextRunTime { get; set; }
         public string Priority { get; set; }
-        public string Status { get; set; }
+        public StatusType Status { get; set; }
+
+        public bool IsOne { get; set; }
+
     }
 }
