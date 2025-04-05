@@ -79,6 +79,12 @@
                                     Text="Cancel"
                                     TextColor="White"
                                     WidthRequest="70" />
+                                <Label
+                                    Text="{Binding Countdown}"
+                                    FontSize="14"
+                                    TextColor="Black"
+                                    VerticalOptions="Center"
+                                    Margin="0,0,10,0"/>
                             </HorizontalStackLayout>
                         </Grid>
                     </Frame>
