@@ -42,4 +42,8 @@ public abstract class BaseTask
     {
         Status = status;
     }
+    
+    public DateTime? CompletionTime { get; set; }
+    
+    public bool MarkCompleted => CompletionTime != null;
 }

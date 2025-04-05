@@ -47,13 +47,16 @@
             <Frame BackgroundColor="LightGray" Padding="10" Margin="10">
                 <StackLayout>
                     <Label Text="Total Task" TextColor="Black"/>
-                    <Label Text="10" FontSize="18" TextColor="Black"/>
+                    <Label x:Name="TotalTaskLabel" FontSize="18" TextColor="Black"/>
+            
                     <Label Text="Successful Task" TextColor="Black"/>
-                    <Label Text="10" FontSize="18" TextColor="Black"/>
+                    <Label x:Name="CompletedTaskLabel" FontSize="18" TextColor="Black"/>
+            
                     <Label Text="Failed Task" TextColor="Black"/>
-                    <Label Text="10" FontSize="18" TextColor="Black"/>
+                    <Label x:Name="FailedTaskLabel" FontSize="18" TextColor="Black"/>
                 </StackLayout>
             </Frame>
+
             
             <!-- Recently Assigned Tasks -->
             <Frame Grid.Column="1" BackgroundColor="LightGray" Padding="10" Margin="10">
