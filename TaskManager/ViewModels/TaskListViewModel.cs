@@ -63,7 +63,7 @@ namespace TaskManager.ViewModels
         {
             //Todo Add Task Logic
 
-            _taskRepository.UpdateTaskComplished(item.TaskType, item.Id, StatusType.Running);
+            _taskRepository.UpdateTaskComplished(item.TaskType, item.Id);
         }
 
         private void RegisterMessage()

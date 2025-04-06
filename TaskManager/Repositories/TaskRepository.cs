@@ -16,7 +16,7 @@ namespace TaskManager.Repositories
         void UpdateTaskStatus(int taskId, StatusType status);
 
         //Add On Base UpdateTaskStatus --> UpdateTime
-        void UpdateTaskComplished(string taskType, int taskId, StatusType status);
+        void UpdateTaskComplished(string taskType, int taskId);
 
         void SaveExecutionTime(ExecutionTime executionTime);
         ExecutionTime GetExecutionTime(int id);
@@ -313,7 +313,7 @@ namespace TaskManager.Repositories
         public List<FolderWatcherTask> GetFolderWatcherTasks() => _sqliteConnection.Table<FolderWatcherTask>().ToList();
 
 
-        public void UpdateTaskComplished(string taskType, int taskId, StatusType status)
+        public void UpdateTaskComplished(string taskType, int taskId)
         {
             BaseTask baseTask;
             switch (taskType)
@@ -341,8 +341,7 @@ namespace TaskManager.Repositories
                     throw new System.Exception("Task Type Not Found");
             }
             baseTask.ExecutionTime = GetExecutionTime((int)baseTask.ExecutionTimeId);
-            baseTask.SetStatus(status);
-            if (baseTask.ExecutionTime.OnceExecutionTime != DateTime.MinValue)
+            if (baseTask.ExecutionTime.OnceExecutionTime != null)
             {
                 baseTask.ExecutionTime.OnceExecutionTime = DateTime.Now;
             }
