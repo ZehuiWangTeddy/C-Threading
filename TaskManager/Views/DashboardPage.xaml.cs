@@ -9,6 +9,8 @@ using TaskManager.Models.DBModels;
 using TaskManager.Models.Enums;
 using TaskManager.Repositories;
 using TaskManager.Services;
+using System;
+using Microsoft.Maui.Graphics;
 
 namespace TaskManager.Views
 {
@@ -279,106 +281,148 @@ namespace TaskManager.Views
     }
 
     // Pie Chart Implementation - Task Status Distribution
-    public class PieChartDrawable : IDrawable
+public class PieChartDrawable : IDrawable
+{
+    private int _completedTasksCount;
+    private int _pendingTasksCount;
+    private int _failedTasksCount;
+    private bool _dataLoaded = false;
+
+    public PieChartDrawable()
     {
-        private int _completedTasksCount;
-        private int _pendingTasksCount;
-        private int _failedTasksCount;
+        // Initialize with zero values
+        _completedTasksCount = 0;
+        _pendingTasksCount = 0;
+        _failedTasksCount = 0;
+    }
 
-        public PieChartDrawable()
+    public PieChartDrawable(int completedTasksCount, int pendingTasksCount, int failedTasksCount)
+    {
+        _completedTasksCount = completedTasksCount;
+        _pendingTasksCount = pendingTasksCount;
+        _failedTasksCount = failedTasksCount;
+        _dataLoaded = true;
+    }
+
+    // Method to update data from database
+    public void UpdateData(int completedTasksCount, int pendingTasksCount, int failedTasksCount)
+    {
+        _completedTasksCount = completedTasksCount;
+        _pendingTasksCount = pendingTasksCount;
+        _failedTasksCount = failedTasksCount;
+        _dataLoaded = true;
+    }
+
+    public void Draw(ICanvas canvas, RectF dirtyRect)
+    {
+        int total = _completedTasksCount + _pendingTasksCount + _failedTasksCount;
+        
+        // No data case - draw empty chart with message
+        if (total == 0)
         {
-            // Default values
-            _completedTasksCount = 0;
-            _pendingTasksCount = 0;
-            _failedTasksCount = 0;
+            DrawEmptyChart(canvas, dirtyRect);
+            return;
         }
-
-        public PieChartDrawable(int completedTasksCount, int pendingTasksCount, int failedTasksCount)
+        
+        // Calculate percentages
+        float completedPercentage = total > 0 ? ((float)_completedTasksCount / total * 100) : 0;
+        float pendingPercentage = total > 0 ? ((float)_pendingTasksCount / total * 100) : 0;
+        float failedPercentage = total > 0 ? ((float)_failedTasksCount / total * 100) : 0;
+        
+        // Data preparation
+        var values = new[] { _completedTasksCount, _pendingTasksCount, _failedTasksCount };
+        var percentages = new[] { completedPercentage, pendingPercentage, failedPercentage };
+        var labels = new[] { "Completed", "In Progress", "Failed" };
+        var colors = new[] { Colors.MediumSeaGreen, Colors.DodgerBlue, Colors.Crimson };
+        
+        // Chart dimensions
+        float centerX = dirtyRect.Width / 2;
+        float centerY = dirtyRect.Height / 2;
+        float radius = Math.Min(centerX, centerY) - 40; // Reduced radius to fit better
+        
+        float startAngle = 0;
+        
+        // Draw each segment
+        for (int i = 0; i < values.Length; i++)
         {
-            _completedTasksCount = completedTasksCount;
-            _pendingTasksCount = pendingTasksCount;
-            _failedTasksCount = failedTasksCount;
+            // Skip zero values segments
+            if (values[i] <= 0)
+                continue;
+                
+            float sweepAngle = percentages[i] * 3.6f; // Convert percentage to degrees
+            
+            // Draw pie slice
+            canvas.FillColor = colors[i];
+            canvas.FillArc(centerX - radius, centerY - radius, 
+                          radius * 2, radius * 2, 
+                          startAngle, sweepAngle, true);
+            
+            // Calculate label position
+            float midAngle = startAngle + (sweepAngle / 2);
+            float textRadius = radius * 0.7f;
+            
+            // Convert angle to radians for correct math calculations
+            double midAngleRadians = midAngle * Math.PI / 180;
+            
+            float textX = centerX + (float)(textRadius * Math.Cos(midAngleRadians));
+            float textY = centerY + (float)(textRadius * Math.Sin(midAngleRadians));
+            
+            // Draw percentage label
+            canvas.FontSize = 14;
+            canvas.FontColor = Colors.White;
+            canvas.DrawString($"{percentages[i]:F1}%", textX, textY, HorizontalAlignment.Center);
+            
+            startAngle += sweepAngle;
         }
-
-        public void Draw(ICanvas canvas, RectF dirtyRect)
+        
+        // Draw legend
+        float legendX = 20;
+        float legendY = dirtyRect.Height - 70;
+        float legendSpacing = 22;
+        
+        for (int i = 0; i < labels.Length; i++)
         {
-            int total = _completedTasksCount + _pendingTasksCount + _failedTasksCount;
+            canvas.FillColor = colors[i];
+            canvas.FillRectangle(legendX, legendY + (i * legendSpacing), 12, 12);
             
-            // If no data, use default values
-            if (total == 0)
-            {
-                _completedTasksCount = 1;
-                _pendingTasksCount = 1;
-                _failedTasksCount = 1;
-                total = 3;
-            }
-            
-            // Calculate percentages
-            float completedPercentage = (float)_completedTasksCount / total * 100;
-            float pendingPercentage = (float)_pendingTasksCount / total * 100;
-            float failedPercentage = (float)_failedTasksCount / total * 100;
-            
-            // Data (in percentages)
-            float[] data = new float[] { completedPercentage, pendingPercentage, failedPercentage };
-            string[] labels = new string[] { "Completed", "In Progress", "Failed" };
-            Color[] colors = new Color[] { Colors.MediumSeaGreen, Colors.DodgerBlue, Colors.Crimson };
-            
-            float centerX = dirtyRect.Width / 2;
-            float centerY = dirtyRect.Height / 2;
-            float radius = Math.Min(centerX, centerY) - 30;
-            
-            float startAngle = 0;
-            
-            for (int i = 0; i < data.Length; i++)
-            {
-                float sweepAngle = data[i] * 3.6f; // Convert percentage to degrees (360 / 100 = 3.6)
-                
-                // Draw pie slice
-                canvas.FillColor = colors[i];
-                canvas.FillArc(centerX - radius, centerY - radius, 
-                              radius * 2, radius * 2, 
-                              startAngle, sweepAngle, true);
-                
-                // Calculate text position (mid-point of the arc)
-                float midAngle = startAngle + (sweepAngle / 2);
-                float textRadius = radius * 0.7f;
-                float textX = centerX + (float)(textRadius * Math.Cos(midAngle * Math.PI / 180));
-                float textY = centerY + (float)(textRadius * Math.Sin(midAngle * Math.PI / 180));
-                
-                // Draw percentage text
-                canvas.FontSize = 12;
-                canvas.FontColor = Colors.White;
-                canvas.DrawString($"{data[i]:F1}%", textX, textY, HorizontalAlignment.Center);
-                
-                startAngle += sweepAngle;
-            }
-            
-            // Draw legend
-            float legendX = 20;
-            float legendY = dirtyRect.Height - 60;
-            
-            for (int i = 0; i < labels.Length; i++)
-            {
-                canvas.FillColor = colors[i];
-                canvas.FillRectangle(legendX, legendY + (i * 20), 10, 10);
-                
-                canvas.FontSize = 12;
-                canvas.FontColor = Colors.Black;
-                canvas.DrawString($"{labels[i]} ({GetCountForIndex(i)})", legendX + 15, legendY + (i * 20) + 5, HorizontalAlignment.Left);
-            }
-        }
-
-        private int GetCountForIndex(int index)
-        {
-            return index switch
-            {
-                0 => _completedTasksCount,
-                1 => _pendingTasksCount,
-                2 => _failedTasksCount,
-                _ => 0
-            };
+            canvas.FontSize = 12;
+            canvas.FontColor = Colors.Black;
+            canvas.DrawString($"{labels[i]} ({values[i]})", legendX + 18, legendY + (i * legendSpacing) + 6, HorizontalAlignment.Left);
         }
     }
+    
+    private void DrawEmptyChart(ICanvas canvas, RectF dirtyRect)
+    {
+        // Draw empty chart with message
+        float centerX = dirtyRect.Width / 2;
+        float centerY = dirtyRect.Height / 2;
+        
+        canvas.StrokeColor = Colors.Gray;
+        canvas.StrokeSize = 2;
+        canvas.DrawCircle(centerX, centerY, 100);
+        
+        canvas.FontColor = Colors.Gray;
+        canvas.FontSize = 14;
+        canvas.DrawString("No task data available", centerX, centerY, HorizontalAlignment.Center);
+        
+        // Draw empty legend
+        float legendX = 20;
+        float legendY = dirtyRect.Height - 70;
+        
+        string[] labels = new[] { "Completed", "In Progress", "Failed" };
+        Color[] colors = new[] { Colors.MediumSeaGreen, Colors.DodgerBlue, Colors.Crimson };
+        
+        for (int i = 0; i < labels.Length; i++)
+        {
+            canvas.FillColor = colors[i];
+            canvas.FillRectangle(legendX, legendY + (i * 22), 12, 12);
+            
+            canvas.FontSize = 12;
+            canvas.FontColor = Colors.Black;
+            canvas.DrawString($"{labels[i]} (0)", legendX + 18, legendY + (i * 22) + 6, HorizontalAlignment.Left);
+        }
+    }
+}
 
     // Line Chart Implementation - Completed Tasks Daily
     public class LineChartDrawable : IDrawable

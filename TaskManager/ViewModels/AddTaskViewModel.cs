@@ -234,17 +234,14 @@ namespace TaskManager.ViewModels
         {
             try
             {
-                // 1. Create executionTime
                 var executionTime = new ExecutionTime(
                     onceExecutionTime: RecurrencePattern == "OneTime" ? ExecutionDate.Date.Add(ExecutionTimeSpan) : null,
                     recurrencePattern: Enum.Parse<RecurrencePattern>(RecurrencePattern),
-                    intervalInMinutes: null,
                     nextExecutionTime: NextRunDate.Date.Add(NextRunTimeSpan)
                 );
 
                 _taskRepository.SaveExecutionTime(executionTime);
 
-                // 2. Create Task type
                 var baseTask = TaskConverter.ConvertToDbTask(new TaskItem
                 {
                     Name = TaskName,

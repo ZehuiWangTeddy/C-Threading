@@ -17,13 +17,15 @@ using TaskManager.Models.Enums;
 using TaskManager.Repositories;
 using TaskManager.Views;
 using static TaskManager.Messages.DbOperationMessage;
+using CommunityToolkit.Maui.Core;
 
 namespace TaskManager.ViewModels
 {
-    public class TaskListViewModel : ObservableObject
+    public class TaskListViewModel : ObservableObject, IDisposable
     {
         private readonly ITaskRepository _taskRepository;
-
+        private System.Timers.Timer _updateTimer;
+        private bool _disposed;
 
         public TaskListViewModel(ITaskRepository taskRepository)
         {
@@ -31,8 +33,28 @@ namespace TaskManager.ViewModels
             _taskRepository = taskRepository;
             LoadInitialTasks();
             RegisterMessage();
-
+            StartCountdownTimer();
         }
+
+        private void StartCountdownTimer()
+        {
+            _updateTimer = new System.Timers.Timer(1000); // Update every second
+            _updateTimer.Elapsed += (s, e) =>
+            {
+                if (Tasks != null)
+                {
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        foreach (var task in Tasks)
+                        {
+                            task.UpdateCountdown();
+                        }
+                    });
+                }
+            };
+            _updateTimer.Start();
+        }
+
         /// <summary>
         /// Task Work 
         /// </summary>
@@ -142,6 +164,9 @@ namespace TaskManager.ViewModels
                     Status = dbTask.Status
                 };
 
+                // Initialize the countdown immediately
+                taskItem.UpdateCountdown();
+
                 switch (dbTask)
                 {
                     case FolderWatcherTask folderTask:
@@ -191,5 +216,22 @@ namespace TaskManager.ViewModels
 
         #endregion
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _updateTimer?.Dispose();
+                }
+                _disposed = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
     }
 }

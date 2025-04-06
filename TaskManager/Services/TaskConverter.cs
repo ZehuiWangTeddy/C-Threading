@@ -8,6 +8,8 @@ namespace TaskManager.Services
     {
         public static BaseTask ConvertToDbTask(TaskItem taskItem, int executionTimeId)
         {
+            var taskLogger = CreateTaskLogger();
+            
             return taskItem.TaskType switch
             {
                 "Folder Watcher Task" => new FolderWatcherTask(
@@ -17,6 +19,7 @@ namespace TaskManager.Services
                     folderDirectory: taskItem.FileDirectory)
                 {
                     ExecutionTime = CreateExecutionTime(taskItem),
+                    Logger = taskLogger 
                 },
 
                 "File Compression Task" => new FileCompressionTask(
@@ -26,6 +29,7 @@ namespace TaskManager.Services
                     fileDirectory: taskItem.FileDirectory)
                 {
                     ExecutionTime = CreateExecutionTime(taskItem),
+                    Logger = taskLogger 
                 },
 
                 "File Backup System Task" => new FileBackupSystemTask(
@@ -36,6 +40,7 @@ namespace TaskManager.Services
                     sourceDirectory: taskItem.SourceDirectory)
                 {
                     ExecutionTime = CreateExecutionTime(taskItem),
+                    Logger = taskLogger 
                 },
 
                 "Email Notification Task" => new EmailNotificationTask(
@@ -48,6 +53,7 @@ namespace TaskManager.Services
                     messageBody: taskItem.EmailBody)
                 {
                     ExecutionTime = CreateExecutionTime(taskItem),
+                    Logger = taskLogger 
                 },
 
                 _ => throw new ArgumentException("Invalid task type")
@@ -56,22 +62,23 @@ namespace TaskManager.Services
 
         public static ExecutionTime CreateExecutionTime(TaskItem taskItem)
         {
-            //Todo Can Mergers
-
             var recurrencePattern = Enum.Parse<RecurrencePattern>(taskItem.RecurrencePattern);
             if (recurrencePattern == RecurrencePattern.OneTime)
             {
                 return new ExecutionTime(
                     onceExecutionTime: taskItem.ExecutionTime,
                     recurrencePattern: recurrencePattern,
-                    intervalInMinutes: null,
                     nextExecutionTime: null);
             }
             return new ExecutionTime(
                 onceExecutionTime: null,
                 recurrencePattern: recurrencePattern,
-                intervalInMinutes: null, 
                 nextExecutionTime: taskItem.NextRunTime);
+        }
+
+        public static TaskLogger CreateTaskLogger()
+        {
+            return new TaskLogger();
         }
     }
 }
