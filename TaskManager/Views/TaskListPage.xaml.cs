@@ -25,7 +25,23 @@ namespace TaskManager.Views
             BindingContext = dataContext;
         }
 
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+            if (BindingContext is TaskListViewModel viewModel)
+            {
+                viewModel.OnPageAppearing();
+            }
+        }
 
+        protected override void OnDisappearing()
+        {
+            base.OnDisappearing();
+            if (BindingContext is TaskListViewModel viewModel)
+            {
+                viewModel.OnPageDisappearing();
+            }
+        }
 
         private async void OnAddTaskClicked(object sender, EventArgs e)
         {

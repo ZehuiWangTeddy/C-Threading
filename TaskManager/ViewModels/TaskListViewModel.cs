@@ -26,7 +26,6 @@ namespace TaskManager.ViewModels
     {
         private readonly ITaskRepository _taskRepository;
         private readonly TaskUpdateService _taskUpdateService;
-        private System.Timers.Timer? _updateTimer;
         private bool _disposed;
 
         public TaskListViewModel(ITaskRepository taskRepository,TaskUpdateService service) 
@@ -36,7 +35,6 @@ namespace TaskManager.ViewModels
             _taskUpdateService = service;
             _taskUpdateService.TaskStatusChanged += _taskUpdateService_TaskStatusChanged;
             RegisterMessage();
-            StartCountdownTimer();
             
             LoadedCmd = new RelayCommand(() => LoadInitialTasks());
         }
@@ -46,25 +44,7 @@ namespace TaskManager.ViewModels
             //Why this event is not fired?
             LoadInitialTasks();
         }
-
-        private void StartCountdownTimer()
-        {
-            _updateTimer = new System.Timers.Timer(1000); // Update every second
-            _updateTimer.Elapsed += (s, e) =>
-            {
-                if (Tasks != null)
-                {
-                    MainThread.BeginInvokeOnMainThread(() =>
-                    {
-                        foreach (var task in Tasks)
-                        {
-                            task.UpdateCountdown();
-                        }
-                    });
-                }
-            };
-            _updateTimer.Start();
-        }
+        
 
         /// <summary>
         /// Task Work 
@@ -138,17 +118,16 @@ namespace TaskManager.ViewModels
             {
                 // load all task from DB
                 var dbTasks = _taskRepository.GetAllTasks();
-                Tasks?.Clear();
-                foreach (var task in ConvertDbTasks(dbTasks))
-                {
-                    // Test Task list style
-                    // task.Status = StatusType.Completed;
-                    Tasks?.Add(task);
-                }
+                var convertedTasks = ConvertDbTasks(dbTasks);
+                
+                // Create a new collection instead of modifying the existing one
+                Tasks = new ObservableCollection<TaskItem>(convertedTasks);
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Load Task Faild: {ex.Message}");
+                Debug.WriteLine($"Load Task Failed: {ex.Message}");
+                // Initialize with empty collection if loading fails
+                Tasks = new ObservableCollection<TaskItem>();
             }
         }
 
@@ -212,12 +191,21 @@ namespace TaskManager.ViewModels
 
 
         #region Propertys
-        private ObservableCollection<TaskItem>? tasks = new();
+        private ObservableCollection<TaskItem> tasks = new();
 
-        public ObservableCollection<TaskItem>? Tasks
+        public ObservableCollection<TaskItem> Tasks
         {
             get { return tasks; }
             set { SetProperty(ref tasks, value); }
+        }
+
+        public void OnPageAppearing()
+        {
+            LoadInitialTasks();
+        }
+
+        public void OnPageDisappearing()
+        {
         }
         #endregion
 
@@ -234,7 +222,7 @@ namespace TaskManager.ViewModels
             {
                 if (disposing)
                 {
-                    _updateTimer?.Dispose();
+                    // _updateTimer?.Dispose();
                 }
                 _disposed = true;
             }
