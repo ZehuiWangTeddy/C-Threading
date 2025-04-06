@@ -33,6 +33,7 @@ namespace TaskManager.Models
 
         public bool IsOne { get; set; }
 
+
         private string _countdown;
         public string Countdown
         {
@@ -74,6 +75,7 @@ namespace TaskManager.Models
             {
                 Countdown = $"{timeUntilExecution.Seconds}s";
             }
+           
         }
     }
 }

@@ -25,6 +25,8 @@ namespace TaskManager.Services
         /// <summary>
         /// Event that is raised when a task's status changes
         /// </summary>
+        ///
+        /// Should I use this to get status changed notification?
         public event EventHandler<TaskUpdateEventArgs> TaskStatusChanged;
         
         /// <summary>

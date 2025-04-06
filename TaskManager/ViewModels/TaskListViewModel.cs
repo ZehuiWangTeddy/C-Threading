@@ -18,22 +18,33 @@ using TaskManager.Repositories;
 using TaskManager.Views;
 using static TaskManager.Messages.DbOperationMessage;
 using CommunityToolkit.Maui.Core;
+using TaskManager.Services;
 
 namespace TaskManager.ViewModels
 {
     public class TaskListViewModel : ObservableObject, IDisposable
     {
         private readonly ITaskRepository _taskRepository;
-        private System.Timers.Timer _updateTimer;
+        private readonly TaskUpdateService _taskUpdateService;
+        private System.Timers.Timer? _updateTimer;
         private bool _disposed;
 
-        public TaskListViewModel(ITaskRepository taskRepository)
+        public TaskListViewModel(ITaskRepository taskRepository,TaskUpdateService service) 
         {
             //IPlatformApplication.Current.Services.GetRequiredService<ITaskRepository>()
             _taskRepository = taskRepository;
-            LoadInitialTasks();
+            _taskUpdateService = service;
+            _taskUpdateService.TaskStatusChanged += _taskUpdateService_TaskStatusChanged;
             RegisterMessage();
             StartCountdownTimer();
+            
+            LoadedCmd = new RelayCommand(() => LoadInitialTasks());
+        }
+
+        private void _taskUpdateService_TaskStatusChanged(object? sender, TaskUpdateEventArgs e)
+        {
+            //Why this event is not fired?
+            LoadInitialTasks();
         }
 
         private void StartCountdownTimer()
@@ -61,14 +72,13 @@ namespace TaskManager.ViewModels
         /// <param name="item"></param>
         private void StartTask(TaskItem item)
         {
-            //Todo Add Task Logic
-
             _taskRepository.UpdateTaskComplished(item.TaskType, item.Id, StatusType.Running);
+
         }
 
         private void RegisterMessage()
         {
-            WeakReferenceMessenger.Default.Register<DbOperationMessage>(this, (r, m) =>
+            WeakReferenceMessenger.Default.Register<DbOperationMessage>(this, async (r, m) =>
             {
                 if (m.Master == nameof(TaskListPage) && m.Slave == nameof(TaskListViewModel))
                 {
@@ -212,6 +222,8 @@ namespace TaskManager.ViewModels
         #endregion
 
         #region Command
+
+        public ICommand LoadedCmd { get; private set; }
 
 
         #endregion

@@ -121,6 +121,7 @@ namespace TaskManager.Services
                             var task = _taskRepository.GetTaskById(taskId);
                             if (task != null)
                             {
+                                // But status doesn't update, did not work in DB
                                 TaskByIdUpdated?.Invoke(this, task);
                             }
                             
