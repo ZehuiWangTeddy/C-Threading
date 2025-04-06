@@ -67,15 +67,24 @@ namespace TaskManager.Models
                             {
                                 if (_tasksInQueue.Contains(task.Id))
                                 {
-                                    continue;
+                                    BaseTask? existingTask = GetTaskInQueue(task.Id);
+                                    if (existingTask != null)
+                                    {
+                                       if (existingTask.ExecutionTime.OnceExecutionTime ==
+                                            task.ExecutionTime.OnceExecutionTime && existingTask.ExecutionTime.NextExecutionTime == task.ExecutionTime.NextExecutionTime )
+                                        {
+                                            continue;
+                                        }
+                                       _taskQueue.Remove(task);
+                                       _tasksInQueue.Remove(task.Id);
+                                    } 
                                 }
                                 
                                 if (_taskQueue.Count >= MAX_QUEUE_SIZE) 
                                     break;
-                                
+                            
                                 _taskQueue.Add(task);
                                 _tasksInQueue.Add(task.Id); 
-                                
                                 _taskUpdateService.NotifyTaskUpdated(task);
                             }
                         }
@@ -175,7 +184,7 @@ namespace TaskManager.Models
                                 }
                             }
                         }
-
+                        Console.WriteLine(taskToExecute?.Id);
                         if (taskToExecute != null)
                         {
                             ExecuteTask(taskToExecute);
@@ -281,6 +290,15 @@ namespace TaskManager.Models
                     Console.WriteLine($"Error disposing CancellationTokenSource: {ex.Message}");
                 }
             }
+        }
+
+        public BaseTask? GetTaskInQueue(int id)
+        {
+            foreach (var task in _taskQueue)
+            {
+                if (task.Id == id) return task;
+            }
+            return null;
         }
         
         public void PauseProcessing()
