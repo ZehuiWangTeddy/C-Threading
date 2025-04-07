@@ -225,6 +225,7 @@ namespace TaskManager.Models
                 _taskUpdateService.NotifyStatusChanged(task);
 
                 task.Execute();
+                task.LastCompletionTime = DateTime.Now;
                 
                 if (task.ExecutionTime?.RecurrencePattern != RecurrencePattern.OneTime)
                 {

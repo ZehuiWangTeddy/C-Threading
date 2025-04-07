@@ -117,6 +117,34 @@ public abstract class BaseTask : INotifyPropertyChanged
             }
         }
     }
+    
+    private DateTime? _createdAt;
+    public DateTime? CreatedAt 
+    { 
+        get => _createdAt;
+        set
+        {
+            if (_createdAt != value)
+            {
+                _createdAt = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+    
+    private DateTime? _lastCompletionTime;
+    public DateTime? LastCompletionTime
+    { 
+        get => _lastCompletionTime;
+        set
+        {
+            if (_lastCompletionTime != value)
+            {
+                _lastCompletionTime = value;
+                OnPropertyChanged();
+            }
+        }
+    }
 
     [ForeignKey(typeof(TaskLogger))]
     public int? TaskLoggerId { get; set; }
@@ -148,6 +176,7 @@ public abstract class BaseTask : INotifyPropertyChanged
         Name = name;
         Priority = priority;
         Status = StatusType.Pending;
+        CreatedAt = DateTime.Now;
     }
 
     public abstract void Execute();
