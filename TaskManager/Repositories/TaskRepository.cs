@@ -304,6 +304,7 @@ namespace TaskManager.Repositories
             {
                 task.SetStatus(status);
                 SaveTask(task);
+                
             }
         }
 
@@ -341,7 +342,8 @@ namespace TaskManager.Repositories
                     throw new System.Exception("Task Type Not Found");
             }
             baseTask.ExecutionTime = GetExecutionTime((int)baseTask.ExecutionTimeId);
-            if (baseTask.ExecutionTime.OnceExecutionTime != null)
+            //baseTask.SetStatus(status);
+            if (baseTask.ExecutionTime.OnceExecutionTime != DateTime.MinValue)
             {
                 baseTask.ExecutionTime.OnceExecutionTime = DateTime.Now;
             }

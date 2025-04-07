@@ -222,7 +222,7 @@ namespace TaskManager.Models
                 task.SetStatus(StatusType.Running);
                 task.ThreadId = Thread.CurrentThread.ManagedThreadId;
                 _taskRepository.SaveTask(task);
-                _taskUpdateService.NotifyStatusChanged(task);
+                _taskUpdateService.NotifyStatusChanged(task); // looks like did not call successful
 
                 task.Execute();
                 

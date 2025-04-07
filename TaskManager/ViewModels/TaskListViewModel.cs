@@ -18,42 +18,33 @@ using TaskManager.Repositories;
 using TaskManager.Views;
 using static TaskManager.Messages.DbOperationMessage;
 using CommunityToolkit.Maui.Core;
+using TaskManager.Services;
 
 namespace TaskManager.ViewModels
 {
     public class TaskListViewModel : ObservableObject, IDisposable
     {
         private readonly ITaskRepository _taskRepository;
-        private System.Timers.Timer _updateTimer;
+        private readonly TaskUpdateService _taskUpdateService;
         private bool _disposed;
 
-        public TaskListViewModel(ITaskRepository taskRepository)
+        public TaskListViewModel(ITaskRepository taskRepository,TaskUpdateService service) 
         {
             //IPlatformApplication.Current.Services.GetRequiredService<ITaskRepository>()
             _taskRepository = taskRepository;
-            LoadInitialTasks();
+            _taskUpdateService = service;
+            _taskUpdateService.TaskStatusChanged += _taskUpdateService_TaskStatusChanged;
             RegisterMessage();
-            StartCountdownTimer();
+            
+            LoadedCmd = new RelayCommand(() => LoadInitialTasks());
         }
 
-        private void StartCountdownTimer()
+        private void _taskUpdateService_TaskStatusChanged(object? sender, TaskUpdateEventArgs e)
         {
-            _updateTimer = new System.Timers.Timer(1000); // Update every second
-            _updateTimer.Elapsed += (s, e) =>
-            {
-                if (Tasks != null)
-                {
-                    MainThread.BeginInvokeOnMainThread(() =>
-                    {
-                        foreach (var task in Tasks)
-                        {
-                            task.UpdateCountdown();
-                        }
-                    });
-                }
-            };
-            _updateTimer.Start();
+            //Why this event is not fired?
+            LoadInitialTasks();
         }
+        
 
         /// <summary>
         /// Task Work 
@@ -61,14 +52,13 @@ namespace TaskManager.ViewModels
         /// <param name="item"></param>
         private void StartTask(TaskItem item)
         {
-            //Todo Add Task Logic
+            _taskRepository.UpdateTaskComplished(item.TaskType, item.Id, StatusType.Running);
 
-            _taskRepository.UpdateTaskComplished(item.TaskType, item.Id);
         }
 
         private void RegisterMessage()
         {
-            WeakReferenceMessenger.Default.Register<DbOperationMessage>(this, (r, m) =>
+            WeakReferenceMessenger.Default.Register<DbOperationMessage>(this, async (r, m) =>
             {
                 if (m.Master == nameof(TaskListPage) && m.Slave == nameof(TaskListViewModel))
                 {
@@ -128,17 +118,16 @@ namespace TaskManager.ViewModels
             {
                 // load all task from DB
                 var dbTasks = _taskRepository.GetAllTasks();
-                Tasks?.Clear();
-                foreach (var task in ConvertDbTasks(dbTasks))
-                {
-                    // Test Task list style
-                    // task.Status = StatusType.Completed;
-                    Tasks?.Add(task);
-                }
+                var convertedTasks = ConvertDbTasks(dbTasks);
+                
+                // Create a new collection instead of modifying the existing one
+                Tasks = new ObservableCollection<TaskItem>(convertedTasks);
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Load Task Faild: {ex.Message}");
+                Debug.WriteLine($"Load Task Failed: {ex.Message}");
+                // Initialize with empty collection if loading fails
+                Tasks = new ObservableCollection<TaskItem>();
             }
         }
 
@@ -151,15 +140,24 @@ namespace TaskManager.ViewModels
             foreach (var dbTask in dbTasks)
             {
                 DateTime executionTime;
+                DateTime nextRunTime = DateTime.MinValue;
                 if (dbTask.ExecutionTime.OnceExecutionTime == null)
+                {
                     executionTime = (DateTime)dbTask.ExecutionTime.NextExecutionTime;
+                    nextRunTime = (DateTime)dbTask.ExecutionTime.NextExecutionTime;
+                }
                 else
+                {
                     executionTime = (DateTime)dbTask.ExecutionTime.OnceExecutionTime;//OneTime
+                    nextRunTime= DateTime.MinValue;
+                }
+                   
                 var taskItem = new TaskItem
                 {
                     Id = dbTask.Id,
                     Name = dbTask.Name,
                     ExecutionTime = executionTime,
+                    NextRunTime = nextRunTime,
                     Priority = dbTask.Priority.ToString(),
                     Status = dbTask.Status
                 };
@@ -202,16 +200,27 @@ namespace TaskManager.ViewModels
 
 
         #region Propertys
-        private ObservableCollection<TaskItem>? tasks = new();
+        private ObservableCollection<TaskItem> tasks = new();
 
-        public ObservableCollection<TaskItem>? Tasks
+        public ObservableCollection<TaskItem> Tasks
         {
             get { return tasks; }
             set { SetProperty(ref tasks, value); }
         }
+
+        public void OnPageAppearing()
+        {
+            LoadInitialTasks();
+        }
+
+        public void OnPageDisappearing()
+        {
+        }
         #endregion
 
         #region Command
+
+        public ICommand LoadedCmd { get; private set; }
 
 
         #endregion
@@ -222,7 +231,7 @@ namespace TaskManager.ViewModels
             {
                 if (disposing)
                 {
-                    _updateTimer?.Dispose();
+                    // _updateTimer?.Dispose();
                 }
                 _disposed = true;
             }

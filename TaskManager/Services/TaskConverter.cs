@@ -15,9 +15,13 @@ namespace TaskManager.Services
                 "Folder Watcher Task" => new FolderWatcherTask(
                     name: taskItem.Name,
                     executionTimeId: executionTimeId,
+                 
                     priority: Enum.Parse<PriorityType>(taskItem.Priority),
                     folderDirectory: taskItem.FileDirectory)
                 {
+
+                    ExecutionTime = CreateExecutionTime(taskItem),
+
                     Logger = taskLogger 
                 },
 

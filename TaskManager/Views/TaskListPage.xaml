@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:convert="clr-namespace:TaskManager.Converters"
     xmlns:model="clr-namespace:TaskManager.Models"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:vm="clr-namespace:TaskManager.ViewModels"
     Title="Task List"
     x:DataType="vm:TaskListViewModel">
@@ -11,6 +12,10 @@
         <convert:StatusToBackgroundConverter x:Key="StatusToBackgroundConverter" />
         <convert:StatusToVisibilityConverter x:Key="StatusToVisibilityConverter" />
     </ContentPage.Resources>
+    <ContentPage.Behaviors>
+        <toolkit:EventToCommandBehavior Command="{Binding LoadedCmd}" EventName="Loaded" />
+    </ContentPage.Behaviors>
+
 
     <Grid Padding="20" RowDefinitions="Auto, *, Auto">
         <!--  Title  -->
@@ -60,6 +65,7 @@
                                     BackgroundColor="#4CAF50"
                                     Clicked="OnStartTask"
                                     CornerRadius="5"
+                                    
                                     IsVisible="{Binding Status, Converter={StaticResource StatusToVisibilityConverter}}"
                                     Text="Start"
                                     TextColor="White"
@@ -79,12 +85,6 @@
                                     Text="Cancel"
                                     TextColor="White"
                                     WidthRequest="70" />
-                                <Label
-                                    Text="{Binding Countdown}"
-                                    FontSize="14"
-                                    TextColor="Black"
-                                    VerticalOptions="Center"
-                                    Margin="0,0,10,0"/>
                             </HorizontalStackLayout>
                         </Grid>
                     </Frame>

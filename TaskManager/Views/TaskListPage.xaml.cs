@@ -25,7 +25,23 @@ namespace TaskManager.Views
             BindingContext = dataContext;
         }
 
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+            if (BindingContext is TaskListViewModel viewModel)
+            {
+                viewModel.OnPageAppearing();
+            }
+        }
 
+        protected override void OnDisappearing()
+        {
+            base.OnDisappearing();
+            if (BindingContext is TaskListViewModel viewModel)
+            {
+                viewModel.OnPageDisappearing();
+            }
+        }
 
         private async void OnAddTaskClicked(object sender, EventArgs e)
         {
@@ -47,7 +63,13 @@ namespace TaskManager.Views
         {
             if (sender is Button button && button.BindingContext is TaskItem task)
             {
-                if(task.Status == StatusType.Completed)
+                if (task.NextRunTime!=DateTime.MinValue)
+                {
+                    await DisplayAlert("Task",  "Cannot start regular task early", "OK");
+                    return;
+                }
+                
+                if (task.Status == StatusType.Completed)
                 {
                     await DisplayAlert("Task Completed", $"Task {task.Name} has been completed", "OK");
                     return;
@@ -76,7 +98,7 @@ namespace TaskManager.Views
             }
         }
 
-         private async void OnDetailsClicked(object sender, EventArgs e)
+        private async void OnDetailsClicked(object sender, EventArgs e)
         {
             if (sender is Button button && button.BindingContext is TaskItem task)
             {
@@ -89,16 +111,13 @@ namespace TaskManager.Views
                     ThreadId = 1, // Example thread ID
                     ExecutionLog = "Example log" // Example log
                 };
-        
+
+                //You need replace TaskLog -->TaskItem
                 await Navigation.PushModalAsync(new NavigationPage(new TaskDetails(taskLog)));
             }
-        }   
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged(string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
+        
 
     }
 }
