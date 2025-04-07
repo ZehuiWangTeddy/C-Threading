@@ -52,7 +52,7 @@ namespace TaskManager.ViewModels
         /// <param name="item"></param>
         private void StartTask(TaskItem item)
         {
-            _taskRepository.UpdateTaskComplished(item.TaskType, item.Id, StatusType.Running);
+            _taskRepository.UpdateTaskComplished(item.TaskType, item.Id);
 
         }
 
