@@ -140,15 +140,24 @@ namespace TaskManager.ViewModels
             foreach (var dbTask in dbTasks)
             {
                 DateTime executionTime;
+                DateTime nextRunTime = DateTime.MinValue;
                 if (dbTask.ExecutionTime.OnceExecutionTime == null)
+                {
                     executionTime = (DateTime)dbTask.ExecutionTime.NextExecutionTime;
+                    nextRunTime = (DateTime)dbTask.ExecutionTime.NextExecutionTime;
+                }
                 else
+                {
                     executionTime = (DateTime)dbTask.ExecutionTime.OnceExecutionTime;//OneTime
+                    nextRunTime= DateTime.MinValue;
+                }
+                   
                 var taskItem = new TaskItem
                 {
                     Id = dbTask.Id,
                     Name = dbTask.Name,
                     ExecutionTime = executionTime,
+                    NextRunTime = nextRunTime,
                     Priority = dbTask.Priority.ToString(),
                     Status = dbTask.Status
                 };

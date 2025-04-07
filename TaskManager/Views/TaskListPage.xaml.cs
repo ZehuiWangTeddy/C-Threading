@@ -63,6 +63,12 @@ namespace TaskManager.Views
         {
             if (sender is Button button && button.BindingContext is TaskItem task)
             {
+                if (task.NextRunTime!=DateTime.MinValue)
+                {
+                    await DisplayAlert("Task",  "Cannot start regular task early", "OK");
+                    return;
+                }
+                
                 if (task.Status == StatusType.Completed)
                 {
                     await DisplayAlert("Task Completed", $"Task {task.Name} has been completed", "OK");

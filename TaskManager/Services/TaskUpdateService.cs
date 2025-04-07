@@ -76,6 +76,7 @@ namespace TaskManager.Services
             if (_disposed) return;
             
             // Raise the status changed event
+            // Before you invoke, you must update database already
             TaskStatusChanged?.Invoke(this, new TaskUpdateEventArgs(task, TaskUpdateType.StatusChanged, "Status"));
             
             // Also notify general subscribers
