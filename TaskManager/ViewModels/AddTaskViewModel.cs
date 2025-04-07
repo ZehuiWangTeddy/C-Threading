@@ -31,9 +31,7 @@ namespace TaskManager.ViewModels
             TimeChangedCommand = new RelayCommand(TimeChanged);
             
         }
-
-     
-
+        
         private void TimeChanged()
         {
             CalculateNextRunTime();
@@ -401,9 +399,7 @@ namespace TaskManager.ViewModels
             NextRunTimeSpan = nextTime.TimeOfDay.RoundToMinutes();
         }
 
-
-
-
+        
         public ICommand TimeChangedCommand { get; private set; }
         public ICommand ConfirmCommand { get; private set; }
     }
