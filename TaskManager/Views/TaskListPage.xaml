@@ -17,17 +17,21 @@
     </ContentPage.Behaviors>
 
 
-    <Grid Padding="20" RowDefinitions="Auto, *, Auto">
-        <!--  Title  -->
-        <Label
-            FontAttributes="Bold"
-            FontSize="28"
-            HorizontalOptions="Center"
-            Text="Task List" />
+    <Grid Padding="20" RowDefinitions="Auto, Auto,*, Auto">
+        <!--  Refresh Button  -->
+        <ImageButton
+            Grid.Row="1"
+            Margin="0,0,0,8"
+            Command="{Binding RefreshCmd}"
+            HeightRequest="40"
+            HorizontalOptions="End"
+            Source="flushed.png"
+            VerticalOptions="Start"
+            WidthRequest="40" />
 
         <!--  Task List  -->
         <CollectionView
-            Grid.Row="1"
+            Grid.Row="2"
             ItemsSource="{Binding Tasks}"
             VerticalOptions="Fill">
             <CollectionView.ItemTemplate>
@@ -65,7 +69,6 @@
                                     BackgroundColor="#4CAF50"
                                     Clicked="OnStartTask"
                                     CornerRadius="5"
-                                    
                                     IsVisible="{Binding Status, Converter={StaticResource StatusToVisibilityConverter}}"
                                     Text="Start"
                                     TextColor="White"
@@ -94,7 +97,7 @@
 
         <!--  Add Task Button  -->
         <Button
-            Grid.Row="2"
+            Grid.Row="3"
             Padding="20,10"
             BackgroundColor="#2196F3"
             Clicked="OnAddTaskClicked"
