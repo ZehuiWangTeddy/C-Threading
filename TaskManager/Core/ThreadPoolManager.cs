@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -12,18 +13,17 @@ namespace TaskManager.Models
 {
     public class ThreadPoolManager : IDisposable
     {
-        private readonly List<BaseTask> _taskQueue = new();
-        private readonly HashSet<int> _tasksInQueue = new();
-        private List<Thread> _workerThreads = new List<Thread>();
+        private readonly ConcurrentQueue<BaseTask> _taskQueue = new();
+        private readonly ConcurrentDictionary<int, BaseTask> _tasksInQueue = new();
         private volatile bool _isPaused = false;
         private readonly ITaskRepository _taskRepository;
         private readonly TaskUpdateService _taskUpdateService;
         private readonly object _lock = new();
         private readonly CancellationTokenSource _cancellationTokenSource = new();
         private volatile bool _isDisposed = false;
-        
+        private readonly Semaphore _executionSemaphore;
         private const int MAX_QUEUE_SIZE = 50;
-        private const int MAX_THREADS = 10;
+        private const int MAX_CONCURRENT_TASKS = 10; 
         private const int FETCH_INTERVAL_MS = 5000; 
         private const int PROCESS_INTERVAL_MS = 1000; 
         
@@ -34,8 +34,10 @@ namespace TaskManager.Models
         {
             _taskRepository = taskRepository ?? throw new ArgumentNullException(nameof(taskRepository));
             _taskUpdateService = new TaskUpdateService(_taskRepository);
+            _executionSemaphore = new Semaphore(MAX_CONCURRENT_TASKS, MAX_CONCURRENT_TASKS);
             
             Task.Run(FetchAndQueueTasks, _cancellationTokenSource.Token);
+            StartProcessingTasks();
         }
 
         /// <summary>
@@ -61,32 +63,28 @@ namespace TaskManager.Models
                             .Take(MAX_QUEUE_SIZE)
                             .ToList();
 
-                        lock (_lock)
+                        foreach (var task in tasks)
                         {
-                            foreach (var task in tasks)
+                            if (_tasksInQueue.ContainsKey(task.Id))
                             {
-                                if (_tasksInQueue.Contains(task.Id))
+                                if (_tasksInQueue.TryGetValue(task.Id, out BaseTask existingTask))
                                 {
-                                    BaseTask? existingTask = GetTaskInQueue(task.Id);
-                                    if (existingTask != null)
+                                    if (existingTask.ExecutionTime.OnceExecutionTime == task.ExecutionTime.OnceExecutionTime && 
+                                        existingTask.ExecutionTime.NextExecutionTime == task.ExecutionTime.NextExecutionTime)
                                     {
-                                       if (existingTask.ExecutionTime.OnceExecutionTime ==
-                                            task.ExecutionTime.OnceExecutionTime && existingTask.ExecutionTime.NextExecutionTime == task.ExecutionTime.NextExecutionTime )
-                                        {
-                                            continue;
-                                        }
-                                       _taskQueue.Remove(task);
-                                       _tasksInQueue.Remove(task.Id);
-                                    } 
+                                        continue;
+                                    }
+                                    _taskQueue.TryDequeue(out _);
+                                    _tasksInQueue.TryRemove(task.Id, out _);
                                 }
-                                
-                                if (_taskQueue.Count >= MAX_QUEUE_SIZE) 
-                                    break;
-                            
-                                _taskQueue.Add(task);
-                                _tasksInQueue.Add(task.Id); 
-                                _taskUpdateService.NotifyTaskUpdated(task);
                             }
+                            
+                            if (_taskQueue.Count >= MAX_QUEUE_SIZE) 
+                                break;
+                        
+                            _taskQueue.Enqueue(task);
+                            _tasksInQueue.TryAdd(task.Id, task);
+                            _taskUpdateService.NotifyTaskUpdated(task);
                         }
                         
                         if (!_isDisposed)
@@ -126,32 +124,20 @@ namespace TaskManager.Models
         }
 
         /// <summary>
-        /// Starts the worker threads that execute tasks from the queue.
+        /// Starts the task processing using ThreadPool.
         /// </summary>
         public void StartProcessingTasks()
         {
-            _workerThreads.Clear();
-            for (int i = 0; i < MAX_THREADS; i++)
-            {
-                var thread = new Thread(ProcessQueuedTasks)
-                {
-                    IsBackground = true,
-                    Name = $"TaskProcessor-{i}"
-                };
-        
-                _workerThreads.Add(thread);
-                thread.Start();
-            }
+            ThreadPool.QueueUserWorkItem(_ => ProcessQueuedTasks());
         }
 
         /// <summary>
-        /// Worker method that continuously processes tasks from the queue.
+        /// Worker method that continuously processes tasks from the queue using ThreadPool.
         /// </summary>
         private void ProcessQueuedTasks()
         {
             try
             {
-                
                 while (!_isDisposed)
                 {
                     try
@@ -167,41 +153,54 @@ namespace TaskManager.Models
                             continue;
                         }
 
-                        BaseTask? taskToExecute = null;
-
-                        lock (_lock)
+                        if (_taskQueue.TryDequeue(out BaseTask taskToExecute))
                         {
-                            if (_taskQueue.Count > 0)
+                            var now = DateTime.Now;
+                            if ((taskToExecute.ExecutionTime?.NextExecutionTime ?? taskToExecute.ExecutionTime?.OnceExecutionTime) <= now)
                             {
-                                var now = DateTime.Now;
-                                taskToExecute = _taskQueue.FirstOrDefault(task =>
-                                    (task.ExecutionTime?.NextExecutionTime ?? task.ExecutionTime?.OnceExecutionTime) <= now);
-
-                                if (taskToExecute != null)
+                                _tasksInQueue.TryRemove(taskToExecute.Id, out _);
+                                
+                                // Queue the task with semaphore control
+                                ThreadPool.QueueUserWorkItem(_ =>
                                 {
-                                    _taskQueue.Remove(taskToExecute);
-                                    _tasksInQueue.Remove(taskToExecute.Id);
-                                }
+                                    try
+                                    {
+                                        // Wait for a semaphore slot
+                                        _executionSemaphore.WaitOne();
+                                        try
+                                        {
+                                            ExecuteTask(taskToExecute);
+                                        }
+                                        finally
+                                        {
+                                            // Release the semaphore slot
+                                            _executionSemaphore.Release();
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Console.WriteLine($"Error executing task: {ex.Message}");
+                                    }
+                                });
+                            }
+                            else
+                            {
+                                // Put the task back in the queue if it's not time to execute
+                                _taskQueue.Enqueue(taskToExecute);
                             }
                         }
-                        Console.WriteLine(taskToExecute?.Id);
-                        if (taskToExecute != null)
-                        {
-                            ExecuteTask(taskToExecute);
-                        }
-                        Thread.Sleep(1000);
+                        Thread.Sleep(PROCESS_INTERVAL_MS);
                     }
                     catch (ThreadAbortException)
                     {
                         throw;
                     }
-                    catch (ObjectDisposedException ex)
+                    catch (ObjectDisposedException)
                     {
                         break;
                     }
                     catch (Exception ex)
                     {
-                        // Sleep briefly after errors
                         Thread.Sleep(1000);
                     }
                 }
@@ -225,6 +224,7 @@ namespace TaskManager.Models
                 _taskUpdateService.NotifyStatusChanged(task); // looks like did not call successful
 
                 task.Execute();
+                task.LastCompletionTime = DateTime.Now;
                 
                 if (task.ExecutionTime?.RecurrencePattern != RecurrencePattern.OneTime)
                 {
@@ -248,67 +248,48 @@ namespace TaskManager.Models
                 task.Logger.AddLogMessage($"ERROR: {errorMessage}");
                 task.SetStatus(StatusType.Failed);
                 _taskRepository.SaveTask(task);
-                _taskUpdateService.NotifyStatusChanged(task);
-                _taskUpdateService.NotifyLogAdded(task);
+                _taskUpdateService.NotifyTaskUpdated(task);
             }
         }
 
         /// <summary>
-        /// Stops the thread pool manager and releases resources.
+        /// Pauses the task processing.
         /// </summary>
-        public void Dispose()
-        {
-            if (_isDisposed)
-                return;
-
-            Console.WriteLine("ThreadPoolManager disposing... Stack trace:");
-            Console.WriteLine(Environment.StackTrace); 
-            _isDisposed = true;
-
-            try 
-            {
-                if (_cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested) 
-                {
-                    _cancellationTokenSource.Cancel();
-                    Console.WriteLine("Cancellation requested");
-                }
-                Thread.Sleep(200);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error during dispose: {ex.Message}");
-            }
-            finally
-            {
-                try
-                {
-                    _cancellationTokenSource?.Dispose();
-                    Console.WriteLine("ThreadPoolManager disposed");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error disposing CancellationTokenSource: {ex.Message}");
-                }
-            }
-        }
-
-        public BaseTask? GetTaskInQueue(int id)
-        {
-            foreach (var task in _taskQueue)
-            {
-                if (task.Id == id) return task;
-            }
-            return null;
-        }
-        
         public void PauseProcessing()
         {
             _isPaused = true;
         }
 
+        /// <summary>
+        /// Resumes the task processing.
+        /// </summary>
         public void ResumeProcessing()
         {
             _isPaused = false;
+        }
+
+        /// <summary>
+        /// Disposes of the ThreadPoolManager and its resources.
+        /// </summary>
+        public void Dispose()
+        {
+            if (_isDisposed)
+                return;
+                
+            _isDisposed = true;
+            _cancellationTokenSource.Cancel();
+            
+            try
+            {
+                _cancellationTokenSource.Dispose();
+                _executionSemaphore.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during ThreadPoolManager disposal: {ex.Message}");
+            }
+            
+            Console.WriteLine("ThreadPoolManager disposed successfully");
         }
     }
 }
