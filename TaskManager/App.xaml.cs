@@ -1,51 +1,87 @@
+using System;
 using TaskManager.Repositories;
+using TaskManager.Models;
 using TaskManager.Views;
-using System.IO;
+using TaskManager.Services;
+using TaskManager.ViewModels;
+using Microsoft.Maui.Controls;
 
 namespace TaskManager
 {
-    public partial class App : Application
+    public partial class App : Application, IDisposable
     {
         private const string DatabaseFileName = "TaskManager.db";
-        public static string DatabasePath { get; private set; }
-        public static TaskRepository TaskRepo { get; private set; }
+        private ThreadPoolManager _threadPoolManager;
+        private TaskService _taskService;
+        private ITaskRepository _taskRepository;
+        private TaskUpdateService _taskUpdateService;
+        private TaskPollingService _taskPollingService;
+        private bool _disposed;
 
         public App()
         {
             InitializeComponent();
             InitializeDatabase();
 
-            // Set main page
+            
+            MainPage = new NavigationPage(new AppShell());
             MainPage = new NavigationPage(new DashboardPage());
         }
 
         private void InitializeDatabase()
         {
-            try
+            var databasePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), DatabaseFileName);
+            
+            _taskRepository = new TaskRepository(databasePath);
+            _taskUpdateService = new TaskUpdateService(_taskRepository);
+            _taskPollingService = new TaskPollingService(_taskRepository, _taskUpdateService);
+            _threadPoolManager = new ThreadPoolManager(_taskRepository);
+            _taskService = new TaskService(_threadPoolManager, _taskRepository);
+            Console.WriteLine($"Database and tables created at {databasePath}");
+            
+            _threadPoolManager.StartProcessingTasks();
+            Console.WriteLine("ThreadPoolManager initialized and running");
+            
+        }
+
+        protected override void OnSleep()
+        {
+            base.OnSleep();
+            // Remove or comment out this line if it's causing problems
+            // _threadPoolManager?.Dispose();
+    
+            // Instead, use this if you want to temporarily pause
+            Console.WriteLine("App going to sleep - NOT disposing ThreadPoolManager");
+        }
+        protected override void OnResume()
+        {
+            base.OnResume();
+            // Reinitialize components when app resumes
+            _threadPoolManager?.ResumeProcessing();
+          
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
             {
-                // Use cross-platform-safe location
-                DatabasePath = Path.Combine(FileSystem.AppDataDirectory, DatabaseFileName);
-
-                Console.WriteLine($"📁 Database path: {DatabasePath}");
-
-                // Create the repo (this also creates tables)
-                TaskRepo = new TaskRepository(DatabasePath);
-
-                // Force a write to make sure file is physically created
-                if (!File.Exists(DatabasePath))
+                if (disposing)
                 {
-                    File.WriteAllText(DatabasePath, ""); // trigger write
+                    // Dispose managed resources
+                    _taskPollingService?.Dispose();
+                    _threadPoolManager?.Dispose();
+                    _taskUpdateService?.Dispose();
                 }
 
-                if (File.Exists(DatabasePath))
-                    Console.WriteLine("✅ Database file created successfully.");
-                else
-                    Console.WriteLine("❌ Database file was not created.");
+                // Clean up unmanaged resources and override finalizer
+                _disposed = true;
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Error initializing database: {ex}");
-            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

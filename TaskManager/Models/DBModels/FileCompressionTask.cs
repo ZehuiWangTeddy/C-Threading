@@ -18,6 +18,8 @@ public class FileCompressionTask : BaseTask
 
     public override void Execute()
     {
-        Console.WriteLine($"Compressing files from {FileDirectory}");
+        DateTime date = DateTime.Now;
+        var message = $"{date}: File Compression Task: Compressing files in directory {FileDirectory}";
+        Logger.AddLogMessage(message);
     }
 }

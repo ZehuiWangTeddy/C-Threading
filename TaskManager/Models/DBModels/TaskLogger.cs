@@ -1,21 +1,38 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using SQLite;
 using Newtonsoft.Json;  
-using SQLiteNetExtensions.Attributes;
 
 namespace TaskManager.Models.DBModels
 {
-    public class TaskLogger
+    public class TaskLogger : INotifyPropertyChanged
     {
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
 
-        public string LogMessages { get; set; } = "[]";
+        private string _logMessages = "[]";
+        public string LogMessages 
+        { 
+            get => _logMessages;
+            set
+            {
+                if (_logMessages != value)
+                {
+                    _logMessages = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
-        [ForeignKey(typeof(BaseTask))]
-        public int TaskId { get; set; }
+        public event PropertyChangedEventHandler PropertyChanged;
 
-        [OneToOne(CascadeOperations = CascadeOperation.All)]
-        public BaseTask Task { get; set; } 
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
         public void AddLogMessage(string message)
         {
@@ -26,6 +43,7 @@ namespace TaskManager.Models.DBModels
 
         public List<string> GetLogMessages()
         {
+            Debug.WriteLine($"LogMessages: {LogMessages}");
             return JsonConvert.DeserializeObject<List<string>>(LogMessages) ?? new List<string>();
         }
     }

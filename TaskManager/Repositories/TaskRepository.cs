@@ -16,7 +16,7 @@ namespace TaskManager.Repositories
         void UpdateTaskStatus(int taskId, StatusType status);
 
         //Add On Base UpdateTaskStatus --> UpdateTime
-        void UpdateTaskComplished(string taskType, int taskId, StatusType status);
+        void UpdateTaskComplished(string taskType, int taskId);
 
         void SaveExecutionTime(ExecutionTime executionTime);
         ExecutionTime GetExecutionTime(int id);
@@ -58,53 +58,204 @@ namespace TaskManager.Repositories
         {
             return _sqliteConnection.Find<ExecutionTime>(id);
         }
+        
+        private TaskLogger GetTaskLogger(int? loggerId)
+        {
+            if (!loggerId.HasValue) return new TaskLogger();
+            return _sqliteConnection.Find<TaskLogger>(loggerId.Value) ?? new TaskLogger();
+        }
 
         public void SaveTask(BaseTask task)
         {
             int count = 0;
+    
+            // Save the TaskLogger first if it exists
+            if (task.Logger != null)
+            {
+                if (task.Logger.Id == 0)
+                {
+                    _sqliteConnection.Insert(task.Logger);
+                }
+                else
+                {
+                    _sqliteConnection.Update(task.Logger);
+                }
+                task.TaskLoggerId = task.Logger.Id;
+            }
+    
+            // For ExecutionTime (if you're not already handling this)
+            if (task.ExecutionTime != null)
+            {
+                if (task.ExecutionTime.Id == 0)
+                {
+                    _sqliteConnection.Insert(task.ExecutionTime);
+                }
+                else
+                {
+                    _sqliteConnection.Update(task.ExecutionTime);
+                }
+                task.ExecutionTimeId = task.ExecutionTime.Id;
+            }
+    
+            // Check if task exists (has an ID > 0) to determine insert or update
+            bool isNewTask = task.Id == 0;
+    
             if (task is EmailNotificationTask emailTask)
             {
-                count = _sqliteConnection.Insert(emailTask);
+                count = isNewTask ? 
+                    _sqliteConnection.Insert(emailTask) : 
+                    _sqliteConnection.Update(emailTask);
             }
             else if (task is FileBackupSystemTask backupTask)
             {
-                count = _sqliteConnection.Insert(backupTask);
+                count = isNewTask ? 
+                    _sqliteConnection.Insert(backupTask) : 
+                    _sqliteConnection.Update(backupTask);
             }
             else if (task is FileCompressionTask compressionTask)
             {
-                count = _sqliteConnection.Insert(compressionTask);
+                count = isNewTask ? 
+                    _sqliteConnection.Insert(compressionTask) : 
+                    _sqliteConnection.Update(compressionTask);
             }
             else if (task is FolderWatcherTask folderWatcherTask)
             {
-                count = _sqliteConnection.Insert(folderWatcherTask);
+                count = isNewTask ? 
+                    _sqliteConnection.Insert(folderWatcherTask) : 
+                    _sqliteConnection.Update(folderWatcherTask);
             }
-            Debug.WriteLine($"Task saved Count: {count}");
+    
+            Debug.WriteLine($"{(isNewTask ? "Inserted" : "Updated")} task ID: {task.Id}, Count: {count}");
         }
+       public List<BaseTask> GetTasks(StatusType status)
+{
+    Debug.WriteLine("Fetching tasks...");
+    int statusValue = (int)status;
+    
+    if (_sqliteConnection == null)
+    {
+        Debug.WriteLine("SQLite connection is null");
+        return new List<BaseTask>();
+    }
 
-        public List<BaseTask> GetTasks(StatusType status)
+    try
+    {
+        var emailTasks = _sqliteConnection.Table<EmailNotificationTask>()
+            .Where(t => t.StatusValue == statusValue)
+            .ToList();
+        
+        foreach (var task in emailTasks)
         {
-            var emailTasks = _sqliteConnection.Table<EmailNotificationTask>().Where(t => t.Status == status).Cast<BaseTask>().ToList();
-            var backupTasks = _sqliteConnection.Table<FileBackupSystemTask>().Where(t => t.Status == status).Cast<BaseTask>().ToList();
-            var compressionTasks = _sqliteConnection.Table<FileCompressionTask>().Where(t => t.Status == status).Cast<BaseTask>().ToList();
-            var folderWatcherTasks = _sqliteConnection.Table<FolderWatcherTask>().Where(t => t.Status == status).Cast<BaseTask>().ToList();
-
-            return emailTasks.Concat(backupTasks).Concat(compressionTasks).Concat(folderWatcherTasks).ToList();
+            if (task.ExecutionTimeId.HasValue)
+            {
+                task.ExecutionTime = GetExecutionTime(task.ExecutionTimeId.Value);
+            }
+            
+            if (task.TaskLoggerId.HasValue)
+            {
+                task.Logger = _sqliteConnection.Find<TaskLogger>(task.TaskLoggerId.Value);
+            }
         }
+        Debug.WriteLine($"Email Tasks Count: {emailTasks.Count}");
 
-        public BaseTask? GetTaskById(int taskId)
+        var backupTasks = _sqliteConnection.Table<FileBackupSystemTask>()
+            .Where(t => t.StatusValue == statusValue)
+            .ToList();
+        
+        foreach (var task in backupTasks)
         {
-            var emailTask = _sqliteConnection.Table<EmailNotificationTask>().FirstOrDefault(t => t.Id == taskId);
-            if (emailTask != null) return emailTask;
-
-            var backupTask = _sqliteConnection.Table<FileBackupSystemTask>().FirstOrDefault(t => t.Id == taskId);
-            if (backupTask != null) return backupTask;
-
-            var compressionTask = _sqliteConnection.Table<FileCompressionTask>().FirstOrDefault(t => t.Id == taskId);
-            if (compressionTask != null) return compressionTask;
-
-            var folderWatcherTask = _sqliteConnection.Table<FolderWatcherTask>().FirstOrDefault(t => t.Id == taskId);
-            return folderWatcherTask;
+            if (task.ExecutionTimeId.HasValue)
+            {
+                task.ExecutionTime = GetExecutionTime(task.ExecutionTimeId.Value);
+            }
+            
+            if (task.TaskLoggerId.HasValue)
+            {
+                task.Logger = _sqliteConnection.Find<TaskLogger>(task.TaskLoggerId.Value);
+            }
         }
+        Debug.WriteLine($"Backup Tasks Count: {backupTasks.Count}");
+
+        var compressionTasks = _sqliteConnection.Table<FileCompressionTask>()
+            .Where(t => t.StatusValue == statusValue)
+            .ToList();
+        
+        // Load ExecutionTime for each compression task
+        foreach (var task in compressionTasks)
+        {
+            if (task.ExecutionTimeId.HasValue)
+            {
+                task.ExecutionTime = GetExecutionTime(task.ExecutionTimeId.Value);
+            }
+            
+            if (task.TaskLoggerId.HasValue)
+            {
+                task.Logger = _sqliteConnection.Find<TaskLogger>(task.TaskLoggerId.Value);
+            }
+        }
+        Debug.WriteLine($"Compression Tasks Count: {compressionTasks.Count}");
+
+        var folderWatcherTasks = _sqliteConnection.Table<FolderWatcherTask>()
+            .Where(t => t.StatusValue == statusValue)
+            .ToList();
+        
+        foreach (var task in folderWatcherTasks)
+        {
+            if (task.ExecutionTimeId.HasValue)
+            {
+                task.ExecutionTime = GetExecutionTime(task.ExecutionTimeId.Value);
+            }
+            
+            if (task.TaskLoggerId.HasValue)
+            {
+                task.Logger = _sqliteConnection.Find<TaskLogger>(task.TaskLoggerId.Value);
+            }
+        }
+        Debug.WriteLine($"Folder Watcher Tasks Count: {folderWatcherTasks.Count}");
+        
+        return emailTasks.Cast<BaseTask>()
+            .Concat(backupTasks.Cast<BaseTask>())
+            .Concat(compressionTasks.Cast<BaseTask>())
+            .Concat(folderWatcherTasks.Cast<BaseTask>())
+            .ToList();
+    }
+    catch (Exception ex)
+    {
+        Debug.WriteLine($"Exception in GetTasks: {ex}");
+        return new List<BaseTask>();
+    }
+}
+
+public BaseTask? GetTaskById(int taskId)
+{
+    BaseTask? task = null;
+
+    task = _sqliteConnection.Table<EmailNotificationTask>().FirstOrDefault(t => t.Id == taskId);
+    if (task == null)
+        task = _sqliteConnection.Table<FileBackupSystemTask>().FirstOrDefault(t => t.Id == taskId);
+    if (task == null)
+        task = _sqliteConnection.Table<FileCompressionTask>().FirstOrDefault(t => t.Id == taskId);
+    if (task == null)
+        task = _sqliteConnection.Table<FolderWatcherTask>().FirstOrDefault(t => t.Id == taskId);
+
+    if (task == null)
+        return null;
+
+    // Load related ExecutionTime if exists
+    if (task.ExecutionTimeId.HasValue)
+    {
+        task.ExecutionTime = GetExecutionTime(task.ExecutionTimeId.Value);
+    }
+
+    // Load related TaskLogger if exists
+    if (task.TaskLoggerId.HasValue)
+    {
+        task.Logger = GetTaskLogger(task.TaskLoggerId);
+    }
+
+    return task;
+}
+
 
         public List<BaseTask> GetAllTasks()
         {
@@ -114,6 +265,10 @@ namespace TaskManager.Repositories
             foreach (var work in folderWorks)
             {
                 work.ExecutionTime = GetExecutionTime((int)work.ExecutionTimeId);
+                if (work.TaskLoggerId.HasValue)
+                {
+                    work.Logger = GetTaskLogger(work.TaskLoggerId);
+                }
             }
             tasks.AddRange(folderWorks);
 
@@ -121,6 +276,10 @@ namespace TaskManager.Repositories
             foreach (var work in backupWorks)
             {
                 work.ExecutionTime = GetExecutionTime((int)work.ExecutionTimeId);
+                if (work.TaskLoggerId.HasValue)
+                {
+                    work.Logger = GetTaskLogger(work.TaskLoggerId);
+                }
             }
             tasks.AddRange(backupWorks);
 
@@ -128,6 +287,10 @@ namespace TaskManager.Repositories
             foreach (var work in compressionWorks)
             {
                 work.ExecutionTime = GetExecutionTime((int)work.ExecutionTimeId);
+                if (work.TaskLoggerId.HasValue)
+                {
+                    work.Logger = GetTaskLogger(work.TaskLoggerId);
+                }
             }
             tasks.AddRange(compressionWorks);
 
@@ -135,6 +298,10 @@ namespace TaskManager.Repositories
             foreach (var work in notifTasks)
             {
                 work.ExecutionTime = GetExecutionTime((int)work.ExecutionTimeId);
+                if (work.TaskLoggerId.HasValue)
+                {
+                    work.Logger = GetTaskLogger(work.TaskLoggerId);
+                }
             }
             tasks.AddRange(notifTasks);
             return tasks;
@@ -153,6 +320,7 @@ namespace TaskManager.Repositories
             {
                 task.SetStatus(status);
                 SaveTask(task);
+                
             }
         }
 
@@ -162,7 +330,7 @@ namespace TaskManager.Repositories
         public List<FolderWatcherTask> GetFolderWatcherTasks() => _sqliteConnection.Table<FolderWatcherTask>().ToList();
 
 
-        public void UpdateTaskComplished(string taskType, int taskId, StatusType status)
+        public void UpdateTaskComplished(string taskType, int taskId)
         {
             BaseTask baseTask;
             switch (taskType)
@@ -190,7 +358,7 @@ namespace TaskManager.Repositories
                     throw new System.Exception("Task Type Not Found");
             }
             baseTask.ExecutionTime = GetExecutionTime((int)baseTask.ExecutionTimeId);
-            baseTask.SetStatus(status);
+            //baseTask.SetStatus(status);
             if (baseTask.ExecutionTime.OnceExecutionTime != DateTime.MinValue)
             {
                 baseTask.ExecutionTime.OnceExecutionTime = DateTime.Now;
@@ -220,9 +388,6 @@ namespace TaskManager.Repositories
                     throw new System.Exception("Convert Error");
             }
             Debug.WriteLine($"Update Count:{count}");
-
-           
-
         }
     }
 }

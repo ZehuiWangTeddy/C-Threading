@@ -4,9 +4,7 @@
                                     x:Class="TaskManager.TaskDetails"
                                     BackgroundColor="White">
                        
-                           <ContentPage.ToolbarItems>
-                               <ToolbarItem Text="Back" Clicked="OnBackButtonClicked"/>
-                           </ContentPage.ToolbarItems>
+                           
                        
                            <ContentPage.Content>
                                <ScrollView>

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Handlers;
 using TaskManager.Repositories;
+using TaskManager.Services;
 using TaskManager.ViewModels;
 
 namespace TaskManager;
@@ -12,8 +13,8 @@ public static class MauiProgram
     {
         var builder = MauiApp.CreateBuilder();
         builder
-             .UseMauiApp<App>()
-             .UseMauiCommunityToolkit()
+            .UseMauiApp<App>()
+            .UseMauiCommunityToolkit()
             .ConfigureFonts(fonts =>
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -26,7 +27,8 @@ public static class MauiProgram
             .Services.AddSingleton<ITaskRepository>(provider =>
                 new TaskRepository(Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "TaskManager.db")));
+                    "TaskManager.db")))
+            .AddSingleton<TaskDetailsService>();
 
         RegisterViewModels(builder);
 #if DEBUG
@@ -41,5 +43,9 @@ public static class MauiProgram
         builder.Services.AddTransient<AddTaskViewModel>();
 
         builder.Services.AddSingleton<TaskListViewModel>();
+
+        builder.Services.AddSingleton<TaskUpdateService>();
+
+        builder.Services.AddSingleton<TaskPollingService>();
     }
 }

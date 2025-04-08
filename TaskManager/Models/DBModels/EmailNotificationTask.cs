@@ -23,8 +23,8 @@ public class EmailNotificationTask : BaseTask
 
     public override void Execute()
     {
-        Console.WriteLine($"Sending email from {SenderEmail} to {RecipientEmail}");
-        Console.WriteLine($"Subject: {Subject}");
-        Console.WriteLine($"Message: {MessageBody}");
+        DateTime date = DateTime.Now;
+        var message = $"{date}: Email Notification Task: Sending email from {SenderEmail} to {RecipientEmail}\nSubject: {Subject}\nMessage: {MessageBody}";
+        Logger.AddLogMessage(message);
     }
 }
