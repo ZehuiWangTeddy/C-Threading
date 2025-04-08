@@ -185,4 +185,6 @@ public abstract class BaseTask : INotifyPropertyChanged
     {
         Status = status;
     }
+    
+    public DateTime? CompletionTime { get; set; }
 }
