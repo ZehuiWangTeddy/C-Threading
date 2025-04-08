@@ -29,7 +29,7 @@
     <AppXManifest Include="C:\Users\james\Desktop\C-Threading\TaskManager\bin\Debug\net8.0-windows10.0.19041.0\win10-x64\AppxManifest.xml">
       <PackagePath>AppxManifest.xml</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2025-04-08T13:10:58.951</Modified>
+      <Modified>2025-04-08T14:11:10.078</Modified>
     </AppXManifest>
   </ItemGroup>
   <ItemGroup>
@@ -43,11 +43,11 @@
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\james\Desktop\C-Threading\TaskManager\bin\Debug\net8.0-windows10.0.19041.0\win10-x64\TaskManager.dll">
       <PackagePath>TaskManager.dll</PackagePath>
-      <Modified>2025-04-08T13:10:57.757</Modified>
+      <Modified>2025-04-08T14:11:08.200</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\james\Desktop\C-Threading\TaskManager\obj\Debug\net8.0-windows10.0.19041.0\win10-x64\apphost.exe">
       <PackagePath>TaskManager.exe</PackagePath>
-      <Modified>2025-04-08T13:10:58.155</Modified>
+      <Modified>2025-04-08T14:11:08.947</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\james\Desktop\C-Threading\TaskManager\Resources\Raw\AboutAssets.txt">
       <PackagePath>AboutAssets.txt</PackagePath>
