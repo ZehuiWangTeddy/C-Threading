@@ -10,14 +10,14 @@
 using System;
 using System.Reflection;
 
-[assembly: System.Reflection.AssemblyMetadataAttribute("Microsoft.Maui.ApplicationModel.AppInfo.PackageName", "com.companyname.taskmanager")]
+[assembly: System.Reflection.AssemblyMetadataAttribute("Microsoft.Maui.ApplicationModel.AppInfo.PackageName", "com.companyname.taskmanager.temp")]
 [assembly: System.Reflection.AssemblyMetadataAttribute("Microsoft.Maui.ApplicationModel.AppInfo.PublisherName", "User Name")]
 [assembly: System.Reflection.AssemblyMetadataAttribute("Microsoft.Maui.ApplicationModel.AppInfo.Name", "TaskManager")]
 [assembly: System.Reflection.AssemblyMetadataAttribute("Microsoft.Maui.ApplicationModel.AppInfo.Version", "1.0.0.1")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("TaskManager")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0+6682f2bfabd638823ac9c64fc6c66fd3f0280b58")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0+3c66057df1a48237e2ad3dc02ffbb8236cbf6546")]
 [assembly: System.Reflection.AssemblyProductAttribute("TaskManager")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TaskManager")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

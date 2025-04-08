@@ -56,20 +56,16 @@
                     <Label x:Name="FailedTaskLabel" FontSize="18" TextColor="Black"/>
                 </StackLayout>
             </Frame>
-
             
             <!-- Recently Assigned Tasks -->
             <Frame Grid.Column="1" BackgroundColor="LightGray" Padding="10" Margin="10">
                 <StackLayout>
-                    <Label Text="Recently Assigned Task" TextColor="Black"/>
-                    <Label Text="1. Upload File" TextColor="Black"/>
-                    <Label Text="2. Delete File" TextColor="Black"/>
-                    <Label Text="3. ReUpload File" TextColor="Black"/>
-                    <Label Text="4. Fix File" TextColor="Black"/>
-                    <Label Text="5. Update File" TextColor="Black"/>
+                    <Label Text="Recently Assigned Tasks" FontSize="16" FontAttributes="Bold" TextColor="Black"/>
+                    <StackLayout x:Name="RecentTasksContainer" Spacing="5" />
                     <Button Text="More" BackgroundColor="Red" TextColor="White" Clicked="OnTaskListClicked" Padding="10" Margin="10"/>
                 </StackLayout>
             </Frame>
+
         </Grid>
     </Grid>
 </ContentPage>
