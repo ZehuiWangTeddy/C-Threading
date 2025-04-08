@@ -31,9 +31,7 @@ namespace TaskManager.ViewModels
             TimeChangedCommand = new RelayCommand(TimeChanged);
             
         }
-
-     
-
+        
         private void TimeChanged()
         {
             CalculateNextRunTime();
@@ -173,7 +171,7 @@ namespace TaskManager.ViewModels
                 CalculateNextRunTime();
             }
         }
-
+        
         // public static class DateTimeExtensions
         // {
         //     public static DateTime RoundToMinutes(this DateTime dt)
@@ -203,8 +201,9 @@ namespace TaskManager.ViewModels
             }
         }
 
-        private string _recurrencePattern = "OneTime";
-        public string RecurrencePattern
+
+        private RecurrencePattern _recurrencePattern = RecurrencePattern.OneTime;
+        public RecurrencePattern SelectRecurrencePattern
         {
             get => _recurrencePattern;
             set
@@ -215,7 +214,7 @@ namespace TaskManager.ViewModels
             }
         }
 
-        public bool ShowNextRunTime => RecurrencePattern != "OneTime";
+        public bool ShowNextRunTime => SelectRecurrencePattern != RecurrencePattern.OneTime;
 
         private string _priority = "Medium";
         public string Priority
@@ -235,8 +234,8 @@ namespace TaskManager.ViewModels
             try
             {
                 var executionTime = new ExecutionTime(
-                    onceExecutionTime: RecurrencePattern == "OneTime" ? ExecutionDate.Date.Add(ExecutionTimeSpan) : null,
-                    recurrencePattern: Enum.Parse<RecurrencePattern>(RecurrencePattern),
+                    onceExecutionTime: SelectRecurrencePattern == RecurrencePattern.OneTime ? ExecutionDate.Date.Add(ExecutionTimeSpan) : null,
+                    recurrencePattern: SelectRecurrencePattern,
                     nextExecutionTime: NextRunDate.Date.Add(NextRunTimeSpan)
                 );
 
@@ -254,7 +253,7 @@ namespace TaskManager.ViewModels
                     EmailSubject = EmailSubject,
                     EmailBody = EmailBody,
                     ExecutionTime = ExecutionDate.Date.Add(ExecutionTimeSpan),
-                    RecurrencePattern = RecurrencePattern,
+                    RecurrencePattern = SelectRecurrencePattern.ToString(),
                     NextRunTime = NextRunDate.Date.Add(NextRunTimeSpan),
                     Priority = Priority
                 }, executionTime.Id);
@@ -272,25 +271,25 @@ namespace TaskManager.ViewModels
         #region Time Calculation
         private void CalculateNextRunTime()
         {
-            if (string.IsNullOrEmpty(RecurrencePattern)) return;
+            //if (string.IsNullOrEmpty(SelectRecurrencePattern)) return;
 
             var baseTime = ExecutionDate.Date.Add(ExecutionTimeSpan);
 
-            switch (RecurrencePattern)
+            switch (SelectRecurrencePattern)
             {
-                case "Minute":
+                case RecurrencePattern.Minute:
                     UpdateNextRun(baseTime.AddMinutes(1));
                     break;
-                case "Hourly":
+                case RecurrencePattern.Hourly:
                     UpdateNextRun(baseTime.AddHours(1));
                     break;
-                case "Daily":
+                case RecurrencePattern.Daily:
                     UpdateNextRun(baseTime.AddDays(1));
                     break;
-                case "Weekly":
+                case RecurrencePattern.Weekly:
                     UpdateNextRun(baseTime.AddDays(7));
                     break;
-                case "Monthly":
+                case RecurrencePattern.Monthly:
                     UpdateNextRun(baseTime.AddMonths(1));
                     break;
                 default:
@@ -400,9 +399,7 @@ namespace TaskManager.ViewModels
             NextRunTimeSpan = nextTime.TimeOfDay.RoundToMinutes();
         }
 
-
-
-
+        
         public ICommand TimeChangedCommand { get; private set; }
         public ICommand ConfirmCommand { get; private set; }
     }

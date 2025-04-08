@@ -25,6 +25,8 @@ namespace TaskManager.Services
         /// <summary>
         /// Event that is raised when a task's status changes
         /// </summary>
+        ///
+        /// Should I use this to get status changed notification?
         public event EventHandler<TaskUpdateEventArgs> TaskStatusChanged;
         
         /// <summary>
@@ -74,6 +76,7 @@ namespace TaskManager.Services
             if (_disposed) return;
             
             // Raise the status changed event
+            // Before you invoke, you must update database already
             TaskStatusChanged?.Invoke(this, new TaskUpdateEventArgs(task, TaskUpdateType.StatusChanged, "Status"));
             
             // Also notify general subscribers

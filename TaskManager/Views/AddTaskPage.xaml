@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:converters="clr-namespace:TaskManager.Converters"
+    xmlns:enum="clr-namespace:TaskManager.Models.Enums"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:vm="clr-namespace:TaskManager.ViewModels"
     Title="Add New Task"
@@ -10,6 +11,7 @@
 
     <ContentPage.Resources>
         <converters:StringToBoolConverter x:Key="StringToBoolConverter" />
+        <converters:ComparisonConverter x:Key="ComparisonConverter" />
     </ContentPage.Resources>
 
     <ScrollView Padding="20">
@@ -81,27 +83,27 @@
                     <RadioButton
                         Content="One Time"
                         GroupName="RecurrenceGroup"
-                        IsChecked="{Binding RecurrencePattern, Converter={StaticResource StringToBoolConverter}, ConverterParameter='OneTime'}" />
+                        IsChecked="{Binding SelectRecurrencePattern, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static enum:RecurrencePattern.OneTime}}" />
                     <RadioButton
                         Content="Minutely"
                         GroupName="RecurrenceGroup"
-                        IsChecked="{Binding RecurrencePattern, Converter={StaticResource StringToBoolConverter}, ConverterParameter='Minute'}" />
+                        IsChecked="{Binding SelectRecurrencePattern, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static enum:RecurrencePattern.Minute}}" />
                     <RadioButton
                         Content="Hourly"
                         GroupName="RecurrenceGroup"
-                        IsChecked="{Binding RecurrencePattern, Converter={StaticResource StringToBoolConverter}, ConverterParameter='Hourly'}" />
+                        IsChecked="{Binding SelectRecurrencePattern, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static enum:RecurrencePattern.Hourly}}" />
                     <RadioButton
                         Content="Daily"
                         GroupName="RecurrenceGroup"
-                        IsChecked="{Binding RecurrencePattern, Converter={StaticResource StringToBoolConverter}, ConverterParameter='Daily'}" />
+                        IsChecked="{Binding SelectRecurrencePattern, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static enum:RecurrencePattern.Daily}}" />
                     <RadioButton
                         Content="Weekly"
                         GroupName="RecurrenceGroup"
-                        IsChecked="{Binding RecurrencePattern, Converter={StaticResource StringToBoolConverter}, ConverterParameter='Weekly'}" />
+                        IsChecked="{Binding SelectRecurrencePattern, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static enum:RecurrencePattern.Weekly}}" />
                     <RadioButton
                         Content="Monthly"
                         GroupName="RecurrenceGroup"
-                        IsChecked="{Binding RecurrencePattern, Converter={StaticResource StringToBoolConverter}, ConverterParameter='Monthly'}" />
+                        IsChecked="{Binding SelectRecurrencePattern, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static enum:RecurrencePattern.Monthly}}" />
                 </HorizontalStackLayout>
             </VerticalStackLayout>
 
@@ -131,7 +133,7 @@
                             VerticalOptions="Center" />
                         <Label
                             FontSize="14"
-                            Text="{Binding NextRunTimeSpan, StringFormat='{hh:mm}'}"
+                            Text="{Binding NextRunTimeSpan, StringFormat='{}{0:hh\\:mm\\:ss}'}"
                             VerticalOptions="Center" />
                     </HorizontalStackLayout>
                 </VerticalStackLayout>

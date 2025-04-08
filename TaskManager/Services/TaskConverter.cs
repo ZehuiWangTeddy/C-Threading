@@ -15,10 +15,13 @@ namespace TaskManager.Services
                 "Folder Watcher Task" => new FolderWatcherTask(
                     name: taskItem.Name,
                     executionTimeId: executionTimeId,
+                 
                     priority: Enum.Parse<PriorityType>(taskItem.Priority),
                     folderDirectory: taskItem.FileDirectory)
                 {
+
                     ExecutionTime = CreateExecutionTime(taskItem),
+
                     Logger = taskLogger 
                 },
 
@@ -28,7 +31,6 @@ namespace TaskManager.Services
                     priority: Enum.Parse<PriorityType>(taskItem.Priority),
                     fileDirectory: taskItem.FileDirectory)
                 {
-                    ExecutionTime = CreateExecutionTime(taskItem),
                     Logger = taskLogger 
                 },
 
@@ -39,7 +41,6 @@ namespace TaskManager.Services
                     targetDirectory: taskItem.TargetDirectory,
                     sourceDirectory: taskItem.SourceDirectory)
                 {
-                    ExecutionTime = CreateExecutionTime(taskItem),
                     Logger = taskLogger 
                 },
 
@@ -52,7 +53,6 @@ namespace TaskManager.Services
                     subject: taskItem.EmailSubject,
                     messageBody: taskItem.EmailBody)
                 {
-                    ExecutionTime = CreateExecutionTime(taskItem),
                     Logger = taskLogger 
                 },
 
