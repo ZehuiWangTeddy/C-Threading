@@ -187,6 +187,4 @@ public abstract class BaseTask : INotifyPropertyChanged
     }
     
     public DateTime? CompletionTime { get; set; }
-    
-    public bool MarkCompleted => CompletionTime != null;
 }
