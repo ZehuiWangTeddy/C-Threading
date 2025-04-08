@@ -124,5 +124,18 @@ namespace TaskManager.Models
                 NextExecutionTime = now.AddMinutes(intervalsToAdd * IntervalInMinutes.Value);
             }
         }
+        
+        public override string ToString()
+        {
+            if (RecurrencePattern == Enums.RecurrencePattern.OneTime)
+            {
+                return $"{OnceExecutionTime?.ToString("g") ?? "N/A"}";
+            }
+            else
+            {
+                return $"{NextExecutionTime?.ToString("g") ?? "N/A"} ({RecurrencePattern?.ToString() ?? "None"})";
+            }
+        }
+
     }
 }

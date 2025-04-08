@@ -98,25 +98,32 @@ namespace TaskManager.Views
             }
         }
 
-        private async void OnDetailsClicked(object sender, EventArgs e)
+private async void OnDetailsClicked(object sender, EventArgs e)
+{
+    if (sender is Button button && button.BindingContext is TaskItem task)
+    {
+        try
         {
-            if (sender is Button button && button.BindingContext is TaskItem task)
-            {
-                var taskLog = new TaskLog
-                {
-                    TaskName = task.Name,
-                    ExecutionTime = task.ExecutionTime.ToString("HH:mm:ss"),
-                    Priority = TaskPriority.Medium, // Example priority
-                    Status = TaskStatus.Pending, // Example status
-                    ThreadId = 1, // Example thread ID
-                    ExecutionLog = "Example log" // Example log
-                };
+            // Retrieve the ITaskRepository instance from the DI container
+            var taskRepository = IPlatformApplication.Current?.Services.GetRequiredService<ITaskRepository>();
 
-                //You need replace TaskLog -->TaskItem
-                await Navigation.PushModalAsync(new NavigationPage(new TaskDetails(taskLog)));
+            if (taskRepository != null)
+            {
+                // Navigate to the TaskDetails page with the repository and task ID
+                await Navigation.PushModalAsync(new TaskDetails(taskRepository, task.Id));
+            }
+            else
+            {
+                await DisplayAlert("Error", "Task repository not found.", "OK");
             }
         }
-
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error retrieving task details: {ex.Message}");
+            await DisplayAlert("Error", "Failed to retrieve task details.", "OK");
+        }
+    }
+}
         
 
     }

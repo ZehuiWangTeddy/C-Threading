@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using SQLite;
 using Newtonsoft.Json;  
@@ -42,6 +43,7 @@ namespace TaskManager.Models.DBModels
 
         public List<string> GetLogMessages()
         {
+            Debug.WriteLine($"LogMessages: {LogMessages}");
             return JsonConvert.DeserializeObject<List<string>>(LogMessages) ?? new List<string>();
         }
     }

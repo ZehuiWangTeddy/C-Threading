@@ -1,1 +1,1 @@
-C:\Users\james\Desktop\C-Threading\TaskManager\TaskManager.csproj;x64
+C:\Users\atuma\Desktop\C-Threading\TaskManager\TaskManager.csproj;x64

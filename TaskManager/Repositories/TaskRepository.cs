@@ -231,20 +231,36 @@ namespace TaskManager.Repositories
     }
 }
 
-        public BaseTask? GetTaskById(int taskId)
-        {
-            var emailTask = _sqliteConnection.Table<EmailNotificationTask>().FirstOrDefault(t => t.Id == taskId);
-            if (emailTask != null) return emailTask;
+public BaseTask? GetTaskById(int taskId)
+{
+    BaseTask? task = null;
 
-            var backupTask = _sqliteConnection.Table<FileBackupSystemTask>().FirstOrDefault(t => t.Id == taskId);
-            if (backupTask != null) return backupTask;
+    task = _sqliteConnection.Table<EmailNotificationTask>().FirstOrDefault(t => t.Id == taskId);
+    if (task == null)
+        task = _sqliteConnection.Table<FileBackupSystemTask>().FirstOrDefault(t => t.Id == taskId);
+    if (task == null)
+        task = _sqliteConnection.Table<FileCompressionTask>().FirstOrDefault(t => t.Id == taskId);
+    if (task == null)
+        task = _sqliteConnection.Table<FolderWatcherTask>().FirstOrDefault(t => t.Id == taskId);
 
-            var compressionTask = _sqliteConnection.Table<FileCompressionTask>().FirstOrDefault(t => t.Id == taskId);
-            if (compressionTask != null) return compressionTask;
+    if (task == null)
+        return null;
 
-            var folderWatcherTask = _sqliteConnection.Table<FolderWatcherTask>().FirstOrDefault(t => t.Id == taskId);
-            return folderWatcherTask;
-        }
+    // Load related ExecutionTime if exists
+    if (task.ExecutionTimeId.HasValue)
+    {
+        task.ExecutionTime = GetExecutionTime(task.ExecutionTimeId.Value);
+    }
+
+    // Load related TaskLogger if exists
+    if (task.TaskLoggerId.HasValue)
+    {
+        task.Logger = GetTaskLogger(task.TaskLoggerId);
+    }
+
+    return task;
+}
+
 
         public List<BaseTask> GetAllTasks()
         {

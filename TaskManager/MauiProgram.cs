@@ -27,7 +27,8 @@ public static class MauiProgram
             .Services.AddSingleton<ITaskRepository>(provider =>
                 new TaskRepository(Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "TaskManager.db")));
+                    "TaskManager.db")))
+            .AddSingleton<TaskDetailsService>();
 
         RegisterViewModels(builder);
 #if DEBUG
