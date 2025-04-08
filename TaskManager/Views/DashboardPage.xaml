@@ -5,33 +5,26 @@
              xmlns:local="clr-namespace:TaskManager.Views"
              BackgroundColor="White">
     <Grid RowDefinitions="2*, 1.5*" ColumnDefinitions="2*, 5*" Padding="10">
-        
-        <!-- Sidebar Navigation -->
         <StackLayout Grid.RowSpan="2" BackgroundColor="LightGray" Padding="20" Spacing="10">
-            <Button x:Name="DashboardButton" Text="Dashboard" FontSize="18" Padding="10" TextColor="Black"/>
             <Button x:Name="TaskListButton" Text="Task List" FontSize="18" Clicked="OnTaskListClicked" Padding="10" TextColor="Black"/>
-            <Button x:Name="TaskDetailButton" Text="Task Details" FontSize="18" Clicked="OnTaskDetailClicked" Padding="10" TextColor="Black"/>
+            <Button x:Name="RefreshButton" Text="Refresh" FontSize="16" Clicked="OnPageAppearing" Padding="10" BackgroundColor="LightBlue" TextColor="Black" HorizontalOptions="Center" VerticalOptions="EndAndExpand"/>
         </StackLayout>
         
-        <!-- Top Gray Section with Charts -->
         <Grid Grid.Column="1" Margin="10" ColumnDefinitions="*, *, *">
-            <!-- Bar Chart -->
             <Frame Grid.Column="0" BackgroundColor="LightGray" Padding="10" Margin="5">
                 <StackLayout>
-                    <Label Text="Tasks by Month" FontSize="16" FontAttributes="Bold" TextColor="Black" HorizontalOptions="Center"/>
+                    <Label Text="Tasks by Day" FontSize="16" FontAttributes="Bold" TextColor="Black" HorizontalOptions="Center"/>
                     <GraphicsView x:Name="BarChartView" HeightRequest="200" />
                 </StackLayout>
             </Frame>
-            
-            <!-- Pie Chart -->
+
             <Frame Grid.Column="1" BackgroundColor="LightGray" Padding="10" Margin="5">
                 <StackLayout>
                     <Label Text="Task Status Distribution" FontSize="16" FontAttributes="Bold" TextColor="Black" HorizontalOptions="Center"/>
                     <GraphicsView x:Name="PieChartView" HeightRequest="200" />
                 </StackLayout>
             </Frame>
-            
-            <!-- Line Chart -->
+
             <Frame Grid.Column="2" BackgroundColor="LightGray" Padding="10" Margin="5">
                 <StackLayout>
                     <Label Text="Task Performance Trend" FontSize="16" FontAttributes="Bold" TextColor="Black" HorizontalOptions="Center"/>
@@ -39,32 +32,26 @@
                 </StackLayout>
             </Frame>
         </Grid>
-        
-        <!-- Bottom Section -->
+
         <Grid Grid.Row="1" Grid.Column="1" ColumnDefinitions="*, *" Margin="10" RowDefinitions="*">
-            
-            <!-- Task Summary -->
             <Frame BackgroundColor="LightGray" Padding="10" Margin="10">
                 <StackLayout>
                     <Label Text="Total Task" TextColor="Black"/>
-                    <Label Text="10" FontSize="18" TextColor="Black"/>
+                    <Label x:Name="TotalTaskLabel" FontSize="18" TextColor="Black"/>
+            
                     <Label Text="Successful Task" TextColor="Black"/>
-                    <Label Text="10" FontSize="18" TextColor="Black"/>
+                    <Label x:Name="CompletedTaskLabel" FontSize="18" TextColor="Black"/>
+            
                     <Label Text="Failed Task" TextColor="Black"/>
-                    <Label Text="10" FontSize="18" TextColor="Black"/>
+                    <Label x:Name="FailedTaskLabel" FontSize="18" TextColor="Black"/>
                 </StackLayout>
             </Frame>
-            
-            <!-- Recently Assigned Tasks -->
+
             <Frame Grid.Column="1" BackgroundColor="LightGray" Padding="10" Margin="10">
                 <StackLayout>
-                    <Label Text="Recently Assigned Task" TextColor="Black"/>
-                    <Label Text="1. Upload File" TextColor="Black"/>
-                    <Label Text="2. Delete File" TextColor="Black"/>
-                    <Label Text="3. ReUpload File" TextColor="Black"/>
-                    <Label Text="4. Fix File" TextColor="Black"/>
-                    <Label Text="5. Update File" TextColor="Black"/>
-                    <Button Text="More" BackgroundColor="Red" TextColor="White" Padding="10" Margin="10"/>
+                    <Label Text="Recently Added Tasks" FontSize="16" FontAttributes="Bold" TextColor="Black"/>
+                    <StackLayout x:Name="RecentTasksContainer" Spacing="5" />
+                    <Button Text="More" BackgroundColor="Red" TextColor="White" Clicked="OnTaskListClicked" Padding="10" Margin="10"/>
                 </StackLayout>
             </Frame>
         </Grid>

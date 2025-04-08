@@ -26,7 +26,7 @@
 		<ApplicationTitle>TaskManager</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.companyname.taskmanager.temp</ApplicationId>
+		<ApplicationId>com.companyname.taskmanager</ApplicationId>
 
 		<!-- Versions -->
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>

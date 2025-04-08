@@ -1,0 +1,1 @@
+C:\Users\atuma\Desktop\C-Threading\TaskManager\TaskManager.csproj;x64

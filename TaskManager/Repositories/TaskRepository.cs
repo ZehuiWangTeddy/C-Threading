@@ -1,3 +1,4 @@
+using System.Collections;
 using SQLite;
 using TaskManager.Models.DBModels;
 using TaskManager.Models.Enums;
@@ -14,6 +15,8 @@ namespace TaskManager.Repositories
         List<BaseTask> GetTasks(StatusType status);
         BaseTask? GetTaskById(int taskId);
         void UpdateTaskStatus(int taskId, StatusType status);
+        List<BaseTask> GetRecentTasks(int limit);
+
 
         //Add On Base UpdateTaskStatus --> UpdateTime
         void UpdateTaskComplished(string taskType, int taskId);
@@ -22,6 +25,8 @@ namespace TaskManager.Repositories
         ExecutionTime GetExecutionTime(int id);
 
         List<BaseTask> GetAllTasks();
+        List<BaseTask> GetCompletedTasks();
+
         //Fix--> T 
         void DeleteTask<T>(int taskId);
 
@@ -322,6 +327,27 @@ public BaseTask? GetTaskById(int taskId)
                 SaveTask(task);
                 
             }
+        }
+        
+        public List<BaseTask> GetRecentTasks(int limit = 5)
+        {
+            var allTasks = GetAllTasks()
+                .Where(t => t.CreatedAt.HasValue)
+                .OrderByDescending(t => t.CreatedAt)
+                .Take(limit)
+                .ToList();
+
+            return allTasks;
+        }
+        
+        public List<BaseTask> GetCompletedTasks()
+        {
+            var fromDate = DateTime.Today.AddDays(-6); 
+            return GetAllTasks()
+                .Where(t => t.Status == StatusType.Completed 
+                            && t.LastCompletionTime.HasValue 
+                            && t.LastCompletionTime.Value.Date >= fromDate)
+                .ToList();
         }
 
         public List<EmailNotificationTask> GetEmailTasks() => _sqliteConnection.Table<EmailNotificationTask>().ToList();
