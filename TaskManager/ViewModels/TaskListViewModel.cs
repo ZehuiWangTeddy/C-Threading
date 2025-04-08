@@ -28,15 +28,16 @@ namespace TaskManager.ViewModels
         private readonly TaskUpdateService _taskUpdateService;
         private bool _disposed;
 
-        public TaskListViewModel(ITaskRepository taskRepository,TaskUpdateService service) 
+        public TaskListViewModel(ITaskRepository taskRepository, TaskUpdateService service)
         {
             //IPlatformApplication.Current.Services.GetRequiredService<ITaskRepository>()
             _taskRepository = taskRepository;
             _taskUpdateService = service;
             _taskUpdateService.TaskStatusChanged += _taskUpdateService_TaskStatusChanged;
             RegisterMessage();
-            
+
             LoadedCmd = new RelayCommand(() => LoadInitialTasks());
+            RefreshCmd = new RelayCommand(() => LoadInitialTasks());
         }
 
         private void _taskUpdateService_TaskStatusChanged(object? sender, TaskUpdateEventArgs e)
@@ -44,7 +45,7 @@ namespace TaskManager.ViewModels
             //Why this event is not fired?
             LoadInitialTasks();
         }
-        
+
 
         /// <summary>
         /// Task Work 
@@ -119,7 +120,7 @@ namespace TaskManager.ViewModels
                 // load all task from DB
                 var dbTasks = _taskRepository.GetAllTasks();
                 var convertedTasks = ConvertDbTasks(dbTasks);
-                
+
                 // Create a new collection instead of modifying the existing one
                 Tasks = new ObservableCollection<TaskItem>(convertedTasks);
             }
@@ -149,9 +150,9 @@ namespace TaskManager.ViewModels
                 else
                 {
                     executionTime = (DateTime)dbTask.ExecutionTime.OnceExecutionTime;//OneTime
-                    nextRunTime= DateTime.MinValue;
+                    nextRunTime = DateTime.MinValue;
                 }
-                   
+
                 var taskItem = new TaskItem
                 {
                     Id = dbTask.Id,
@@ -221,6 +222,8 @@ namespace TaskManager.ViewModels
         #region Command
 
         public ICommand LoadedCmd { get; private set; }
+
+        public ICommand RefreshCmd { get; private set; }
 
 
         #endregion
