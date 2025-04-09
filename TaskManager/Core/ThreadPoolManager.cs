@@ -54,7 +54,7 @@ namespace TaskManager.Models
                         var now = DateTime.Now;
                         var nextMinute = now.AddMinutes(5); 
 
-                        var tasks = _taskRepository.GetTasks(StatusType.Pending)
+                        var tasks = _taskRepository.GetTasks(StatusType.Pending, StatusType.Running)
                             .Where(t =>
                                 t.ExecutionTime != null && 
                                 ((t.ExecutionTime.NextExecutionTime != null && t.ExecutionTime.NextExecutionTime <= nextMinute) || 
@@ -221,7 +221,7 @@ namespace TaskManager.Models
                 task.SetStatus(StatusType.Running);
                 task.ThreadId = Thread.CurrentThread.ManagedThreadId;
                 _taskRepository.SaveTask(task);
-                _taskUpdateService.NotifyStatusChanged(task); // looks like did not call successful
+                _taskUpdateService.NotifyStatusChanged(task);
 
                 task.Execute();
                 task.LastCompletionTime = DateTime.Now;
@@ -229,7 +229,7 @@ namespace TaskManager.Models
                 if (task.ExecutionTime?.RecurrencePattern != RecurrencePattern.OneTime)
                 {
                     task.ExecutionTime.CalculateNextExecutionTime();
-                    task.SetStatus(StatusType.Pending);
+                    // task.SetStatus(StatusType.Pending);
                     task.Logger.AddLogMessage($"Task completed on thread {Thread.CurrentThread.ManagedThreadId} and task will run again at {task.ExecutionTime.NextExecutionTime}");
                     _taskUpdateService.NotifyExecutionTimeChanged(task);
                     _taskUpdateService.NotifyLogAdded(task);

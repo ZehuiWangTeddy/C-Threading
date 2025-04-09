@@ -12,7 +12,7 @@ namespace TaskManager.Repositories
     public interface ITaskRepository
     {
         void SaveTask(BaseTask task);
-        List<BaseTask> GetTasks(StatusType status);
+        List<BaseTask> GetTasks(StatusType status, StatusType? additionalStatus = null );
         BaseTask? GetTaskById(int taskId);
         void UpdateTaskStatus(int taskId, StatusType status);
         List<BaseTask> GetRecentTasks(int limit);
@@ -132,10 +132,11 @@ namespace TaskManager.Repositories
     
             Debug.WriteLine($"{(isNewTask ? "Inserted" : "Updated")} task ID: {task.Id}, Count: {count}");
         }
-       public List<BaseTask> GetTasks(StatusType status)
+       public List<BaseTask> GetTasks(StatusType status, StatusType? additionalStatus = null)
 {
     Debug.WriteLine("Fetching tasks...");
     int statusValue = (int)status;
+    int? additionalStatusValue = additionalStatus.HasValue ? (int)additionalStatus.Value : null;
     
     if (_sqliteConnection == null)
     {
@@ -145,9 +146,20 @@ namespace TaskManager.Repositories
 
     try
     {
-        var emailTasks = _sqliteConnection.Table<EmailNotificationTask>()
-            .Where(t => t.StatusValue == statusValue)
-            .ToList();
+        // Email tasks
+        List<EmailNotificationTask> emailTasks;
+        if (additionalStatusValue.HasValue)
+        {
+            emailTasks = _sqliteConnection.Table<EmailNotificationTask>()
+                .Where(t => t.StatusValue == statusValue || t.StatusValue == additionalStatusValue.Value)
+                .ToList();
+        }
+        else
+        {
+            emailTasks = _sqliteConnection.Table<EmailNotificationTask>()
+                .Where(t => t.StatusValue == statusValue)
+                .ToList();
+        }
         
         foreach (var task in emailTasks)
         {
@@ -163,9 +175,20 @@ namespace TaskManager.Repositories
         }
         Debug.WriteLine($"Email Tasks Count: {emailTasks.Count}");
 
-        var backupTasks = _sqliteConnection.Table<FileBackupSystemTask>()
-            .Where(t => t.StatusValue == statusValue)
-            .ToList();
+        // Backup tasks
+        List<FileBackupSystemTask> backupTasks;
+        if (additionalStatusValue.HasValue)
+        {
+            backupTasks = _sqliteConnection.Table<FileBackupSystemTask>()
+                .Where(t => t.StatusValue == statusValue || t.StatusValue == additionalStatusValue.Value)
+                .ToList();
+        }
+        else
+        {
+            backupTasks = _sqliteConnection.Table<FileBackupSystemTask>()
+                .Where(t => t.StatusValue == statusValue)
+                .ToList();
+        }
         
         foreach (var task in backupTasks)
         {
@@ -181,11 +204,21 @@ namespace TaskManager.Repositories
         }
         Debug.WriteLine($"Backup Tasks Count: {backupTasks.Count}");
 
-        var compressionTasks = _sqliteConnection.Table<FileCompressionTask>()
-            .Where(t => t.StatusValue == statusValue)
-            .ToList();
+        // Compression tasks
+        List<FileCompressionTask> compressionTasks;
+        if (additionalStatusValue.HasValue)
+        {
+            compressionTasks = _sqliteConnection.Table<FileCompressionTask>()
+                .Where(t => t.StatusValue == statusValue || t.StatusValue == additionalStatusValue.Value)
+                .ToList();
+        }
+        else
+        {
+            compressionTasks = _sqliteConnection.Table<FileCompressionTask>()
+                .Where(t => t.StatusValue == statusValue)
+                .ToList();
+        }
         
-        // Load ExecutionTime for each compression task
         foreach (var task in compressionTasks)
         {
             if (task.ExecutionTimeId.HasValue)
@@ -200,9 +233,20 @@ namespace TaskManager.Repositories
         }
         Debug.WriteLine($"Compression Tasks Count: {compressionTasks.Count}");
 
-        var folderWatcherTasks = _sqliteConnection.Table<FolderWatcherTask>()
-            .Where(t => t.StatusValue == statusValue)
-            .ToList();
+        // Folder watcher tasks
+        List<FolderWatcherTask> folderWatcherTasks;
+        if (additionalStatusValue.HasValue)
+        {
+            folderWatcherTasks = _sqliteConnection.Table<FolderWatcherTask>()
+                .Where(t => t.StatusValue == statusValue || t.StatusValue == additionalStatusValue.Value)
+                .ToList();
+        }
+        else
+        {
+            folderWatcherTasks = _sqliteConnection.Table<FolderWatcherTask>()
+                .Where(t => t.StatusValue == statusValue)
+                .ToList();
+        }
         
         foreach (var task in folderWatcherTasks)
         {
