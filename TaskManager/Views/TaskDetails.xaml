@@ -1,4 +1,5 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8"?>
+
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="TaskManager.TaskDetails"
@@ -12,7 +13,7 @@
                 <Label Text="Task Execution Details"
                        FontSize="24"
                        FontAttributes="Bold"
-                       HorizontalOptions="Center"/>
+                       HorizontalOptions="Center" />
 
                 <!-- Back and Refresh buttons -->
                 <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
@@ -20,12 +21,12 @@
                             Clicked="OnBackClicked"
                             BackgroundColor="#dddddd"
                             TextColor="Black"
-                            CornerRadius="8"/>
+                            CornerRadius="8" />
                     <Button Text="Refresh"
                             Clicked="OnRefreshClicked"
                             BackgroundColor="#dddddd"
                             TextColor="Black"
-                            CornerRadius="8"/>
+                            CornerRadius="8" />
                 </HorizontalStackLayout>
 
                 <!-- Main Info Frame -->
@@ -33,33 +34,43 @@
                     <VerticalStackLayout Spacing="5">
 
                         <!-- Grid for task info -->
-                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="1" RowSpacing="1">
+                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="1"
+                              RowSpacing="1">
 
-                            <Label Text="Task Name:" FontSize="16" FontAttributes="Bold" Grid.Row="0" Grid.Column="0" TextColor="Black"/>
-                            <Label Text="{Binding TaskName}" FontSize="16" TextColor="Black" Grid.Row="0" Grid.Column="1"/>
+                            <Label Text="Task Name:" FontSize="16" FontAttributes="Bold" Grid.Row="0" Grid.Column="0"
+                                   TextColor="Black" />
+                            <Label Text="{Binding TaskName}" FontSize="16" TextColor="Black" Grid.Row="0"
+                                   Grid.Column="1" />
 
-                            <Label Text="Execution Time:" FontSize="16" FontAttributes="Bold" Grid.Row="1" Grid.Column="0" TextColor="Black"/>
-                            <Label Text="{Binding ExecutionTime}" FontSize="16" TextColor="Black" Grid.Row="1" Grid.Column="1"/>
+                            <Label Text="Execution Time:" FontSize="16" FontAttributes="Bold" Grid.Row="1"
+                                   Grid.Column="0" TextColor="Black" />
+                            <Label Text="{Binding ExecutionTime}" FontSize="16" TextColor="Black" Grid.Row="1"
+                                   Grid.Column="1" />
 
-                            <Label Text="Priority:" FontSize="16" FontAttributes="Bold" Grid.Row="2" Grid.Column="0" TextColor="Black"/>
-                            <Label Text="{Binding Priority}" FontSize="16" TextColor="Black" Grid.Row="2" Grid.Column="1"/>
+                            <Label Text="Priority:" FontSize="16" FontAttributes="Bold" Grid.Row="2" Grid.Column="0"
+                                   TextColor="Black" />
+                            <Label Text="{Binding Priority}" FontSize="16" TextColor="Black" Grid.Row="2"
+                                   Grid.Column="1" />
 
-                            <Label Text="Status:" FontSize="16" FontAttributes="Bold" Grid.Row="3" Grid.Column="0" TextColor="Black"/>
-                            <Label Text="{Binding Status}" FontSize="16" TextColor="Black" Grid.Row="3" Grid.Column="1"/>
+                            <Label Text="Status:" FontSize="16" FontAttributes="Bold" Grid.Row="3" Grid.Column="0"
+                                   TextColor="Black" />
+                            <Label Text="{Binding Status}" FontSize="16" TextColor="Black" Grid.Row="3" Grid.Column="1" />
 
-                            <Label Text="Thread ID:" FontSize="16" FontAttributes="Bold" Grid.Row="4" Grid.Column="0" TextColor="Black"/>
-                            <Label Text="{Binding ThreadId}" FontSize="16" TextColor="Black" Grid.Row="4" Grid.Column="1"/>
+                            <Label Text="Thread ID:" FontSize="16" FontAttributes="Bold" Grid.Row="4" Grid.Column="0"
+                                   TextColor="Black" />
+                            <Label Text="{Binding ThreadId}" FontSize="16" TextColor="Black" Grid.Row="4"
+                                   Grid.Column="1" />
                         </Grid>
 
                         <!-- Execution Log -->
-                        <Label Text="Execution Log:" FontSize="16" FontAttributes="Bold"/>
+                        <Label Text="Execution Log:" FontSize="16" FontAttributes="Bold" />
                         <Frame BackgroundColor="Black" HeightRequest="500" CornerRadius="5">
                             <ScrollView>
                                 <Label Text="{Binding ExecutionLog}"
                                        FontSize="14"
                                        TextColor="Lime"
                                        LineBreakMode="WordWrap"
-                                       FontFamily="Courier New"/>
+                                       FontFamily="Courier New" />
                             </ScrollView>
                         </Frame>
 

@@ -1,17 +1,15 @@
 using TaskManager.Models.Enums;
+
 namespace TaskManager.Models.DBModels;
-using System;
 
 public class EmailNotificationTask : BaseTask
 {
-    public string SenderEmail { get; set; }
-    public string RecipientEmail { get; set; }
-    public string Subject { get; set; }
-    public string MessageBody { get; set; }
-    
-    public EmailNotificationTask() : base("", PriorityType.Medium) {}
+    public EmailNotificationTask() : base("", PriorityType.Medium)
+    {
+    }
 
-    public EmailNotificationTask(string name, int executionTimeId, PriorityType priority, string senderEmail, string recipientEmail, string subject, string messageBody) 
+    public EmailNotificationTask(string name, int executionTimeId, PriorityType priority, string senderEmail,
+        string recipientEmail, string subject, string messageBody)
         : base(name, priority)
     {
         SenderEmail = senderEmail;
@@ -21,10 +19,16 @@ public class EmailNotificationTask : BaseTask
         ExecutionTimeId = executionTimeId;
     }
 
+    public string SenderEmail { get; set; }
+    public string RecipientEmail { get; set; }
+    public string Subject { get; set; }
+    public string MessageBody { get; set; }
+
     public override void Execute()
     {
-        DateTime date = DateTime.Now;
-        var message = $"{date}: Email Notification Task: Sending email from {SenderEmail} to {RecipientEmail}\nSubject: {Subject}\nMessage: {MessageBody}";
+        var date = DateTime.Now;
+        var message =
+            $"{date}: Email Notification Task: Sending email from {SenderEmail} to {RecipientEmail}\nSubject: {Subject}\nMessage: {MessageBody}";
         Logger.AddLogMessage(message);
     }
 }
