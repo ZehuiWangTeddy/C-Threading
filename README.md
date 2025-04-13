@@ -77,3 +77,4 @@ This section is an example as using Rider, if you are using Visual Studio, then 
 2. This project required .NET8.0 SDK, .NET MAUI workload, Windows APP SDK(for Windows device user), Xcode component(for MAC device user), please make sure you have installed everything before you want to try this app.
 3. You can use Visual Studio or Rider to open this project, and use DB Browser or DAtaGrip to open database. From project team side, we are using Rider and DB Browser.
 4. You can double-click ".sln" file (located in the project root directory) to open project, also can drag whole folder to Rider. You should be able to run this project if you already set up environment. But if you still cannot run this project successfully, please contact project team.
+5. To avoid any loading exceptions, we recommend that you run this project locally instead of in a git environment.
