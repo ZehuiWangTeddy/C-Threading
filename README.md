@@ -73,8 +73,9 @@ dotnet run --framework net8.0-windows10.0.19041.0
 This section is an example as using Rider, if you are using Visual Studio, then you may need extra step, so we kindly suggest you to keep same application choice with project team together.
 
 ## Tips
-1. This project only for Mac or Windows, is not suitable for phone, so when you build this app, please don't select phone as target device.
-2. This project required .NET8.0 SDK, .NET MAUI workload, Windows APP SDK(for Windows device user), Xcode component(for MAC device user), please make sure you have installed everything before you want to try this app.
-3. You can use Visual Studio or Rider to open this project, and use DB Browser or DAtaGrip to open database. From project team side, we are using Rider and DB Browser.
-4. You can double-click ".sln" file (located in the project root directory) to open project, also can drag whole folder to Rider. You should be able to run this project if you already set up environment. But if you still cannot run this project successfully, please contact project team.
+1. For mac0S Users: After downloading the ZIP file, move the extracted project folder out of the Downloads directory (e.g., to Documents or Desktop) before running it. macOS sandboxing restrictions may prevent the app from working correctly if it's run directly from the Downloads folder.
+2. This project is only for Mac or Windows, it is not suitable for android or iOS, so when you build this app, please don't select mobile phones as target device.
+3. This project required .NET8.0 SDK, .NET MAUI workload, Windows APP SDK(for Windows device user), Xcode component(for MAC device user), please make sure you have installed everything before running the application.
+3. You can use Visual Studio or Rider (Recommended) to open this project, and use DB Browser or DAtaGrip to open database. From project team side, we are using Rider and DB Browser.
+4. You can double-click ".sln" file (located in the project root directory) to open project, also can drag whole folder to Rider. You should be able to run this project if you already set up environment. But if you still cannot run this project successfully, please contact project team via email.
 5. To avoid any loading exceptions, we recommend that you run this project locally instead of in a git environment.
