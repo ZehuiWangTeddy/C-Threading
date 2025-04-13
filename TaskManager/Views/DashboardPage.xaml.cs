@@ -25,21 +25,32 @@ public partial class DashboardPage : ContentPage
         BarChartView.Drawable = new BarChartDrawable();
         PieChartView.Drawable = new PieChartDrawable();
         LineChartView.Drawable = new LineChartDrawable();
-
-        Appearing += OnPageAppearing;
     }
 
     private IServiceProvider ServiceProvider =>
         Application.Current.MainPage?.Handler?.MauiContext?.Services
         ?? throw new InvalidOperationException("Unable to obtain service provider");
 
-    private void OnPageAppearing(object sender, EventArgs e)
+    private void OnPageRefresh(object sender, EventArgs e)
     {
         LoadTaskData();
         UpdateCharts();
         UpdateSummaryLabels();
         LoadRecentTasks();
     }
+    
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+
+        await Task.Delay(100);
+
+        LoadTaskData();
+        UpdateCharts();
+        UpdateSummaryLabels();
+        LoadRecentTasks();
+    }
+
 
     private void LoadRecentTasks()
     {
@@ -78,7 +89,6 @@ public partial class DashboardPage : ContentPage
     {
         try
         {
-            // Get the repositories and services from DI
             _taskRepository = ServiceProvider.GetService<ITaskRepository>();
             _taskService = ServiceProvider.GetService<TaskService>();
 
@@ -188,7 +198,6 @@ public class BarChartDrawable : IDrawable
 
     public void Draw(ICanvas canvas, RectF dirtyRect)
     {
-        // Group tasks by hour and count them
         var completedByHour = GroupTasksByHour(_completedTasks);
         var failedByHour = GroupTasksByHour(_failedTasks);
 
@@ -302,6 +311,7 @@ public class BarChartDrawable : IDrawable
     }
 }
 
+//Pie Chart Implementation - By Task Status 
 public class PieChartDrawable : IDrawable
 {
     private int _completedTasksCount;
@@ -394,7 +404,6 @@ public class PieChartDrawable : IDrawable
 
     private void DrawEmptyChart(ICanvas canvas, RectF dirtyRect)
     {
-        // Draw empty chart with message
         var centerX = dirtyRect.Width / 2;
         var centerY = dirtyRect.Height / 2;
 
@@ -405,8 +414,7 @@ public class PieChartDrawable : IDrawable
         canvas.FontColor = Colors.Gray;
         canvas.FontSize = 14;
         canvas.DrawString("No task data available", centerX, centerY, HorizontalAlignment.Center);
-
-        // Draw empty legend
+        
         float legendX = 20;
         var legendY = dirtyRect.Height - 70;
 
