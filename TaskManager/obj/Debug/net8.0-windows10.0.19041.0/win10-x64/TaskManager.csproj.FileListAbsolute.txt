@@ -443,3 +443,4 @@ C:\Users\atuma\Desktop\C-Threading\TaskManager\obj\Debug\net8.0-windows10.0.1904
 C:\Users\atuma\Desktop\C-Threading\TaskManager\obj\Debug\net8.0-windows10.0.19041.0\win10-x64\MultipleQualifiersPerDimensionFound.txt
 C:\Users\atuma\Desktop\C-Threading\TaskManager\obj\Debug\net8.0-windows10.0.19041.0\win10-x64\ProjectArchitectures.txt
 C:\Users\atuma\Desktop\C-Threading\TaskManager\obj\Debug\net8.0-windows10.0.19041.0\win10-x64\.winmd_cache\$SkiaSharp.Views.WinUI.Native.winmd_638689436520000000.json
+C:\Users\james\Desktop\C-Threading\TaskManager\obj\Debug\net8.0-windows10.0.19041.0\win10-x64\resizetizer\r\flushed.scale-100.png
