@@ -61,17 +61,12 @@ public partial class App : Application, IDisposable
     protected override void OnSleep()
     {
         base.OnSleep();
-        // Remove or comment out this line if it's causing problems
-        // _threadPoolManager?.Dispose();
-
-        // Instead, use this if you want to temporarily pause
-        Console.WriteLine("App going to sleep - NOT disposing ThreadPoolManager");
+        Console.WriteLine("App going to sleep - but NOT disposing ThreadPoolManager");
     }
 
     protected override void OnResume()
     {
         base.OnResume();
-        // Reinitialize components when app resumes
         _threadPoolManager?.ResumeProcessing();
     }
 
@@ -81,13 +76,10 @@ public partial class App : Application, IDisposable
         {
             if (disposing)
             {
-                // Dispose managed resources
                 _taskPollingService?.Dispose();
                 _threadPoolManager?.Dispose();
                 _taskUpdateService?.Dispose();
             }
-
-            // Clean up unmanaged resources and override finalizer
             _disposed = true;
         }
     }
