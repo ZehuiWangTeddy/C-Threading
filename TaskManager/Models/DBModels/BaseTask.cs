@@ -1,20 +1,41 @@
-using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using TaskManager.Models.Enums;
 using SQLite;
 using SQLiteNetExtensions.Attributes;
+using TaskManager.Models.Enums;
 
 namespace TaskManager.Models.DBModels;
 
 public abstract class BaseTask : INotifyPropertyChanged
 {
-    [PrimaryKey, AutoIncrement]
-    public int Id { get; set; }
+    private DateTime? _createdAt;
+
+    private ExecutionTime _executionTime;
+
+    private DateTime? _lastCompletionTime;
+
+    private TaskLogger _logger;
 
     private string _name;
-    public string Name 
-    { 
+
+    private int _priorityValue;
+
+    private int _statusValue;
+
+    private int? _threadId;
+
+    public BaseTask(string name, PriorityType priority)
+    {
+        Name = name;
+        Priority = priority;
+        Status = StatusType.Pending;
+        CreatedAt = DateTime.Now;
+    }
+
+    [PrimaryKey] [AutoIncrement] public int Id { get; set; }
+
+    public string Name
+    {
         get => _name;
         set
         {
@@ -26,13 +47,11 @@ public abstract class BaseTask : INotifyPropertyChanged
         }
     }
 
-    [ForeignKey(typeof(ExecutionTime))]
-    public int? ExecutionTimeId { get; set; }
+    [ForeignKey(typeof(ExecutionTime))] public int? ExecutionTimeId { get; set; }
 
-    private ExecutionTime _executionTime;
     [OneToOne(CascadeOperations = CascadeOperation.All)]
-    public ExecutionTime ExecutionTime 
-    { 
+    public ExecutionTime ExecutionTime
+    {
         get => _executionTime;
         set
         {
@@ -44,10 +63,9 @@ public abstract class BaseTask : INotifyPropertyChanged
         }
     }
 
-    private int _priorityValue;
     [Column("PriorityValue")]
-    public int PriorityValue 
-    { 
+    public int PriorityValue
+    {
         get => _priorityValue;
         set
         {
@@ -59,11 +77,10 @@ public abstract class BaseTask : INotifyPropertyChanged
             }
         }
     }
-    
-    private int _statusValue;
+
     [Column("StatusValue")]
-    public int StatusValue 
-    { 
+    public int StatusValue
+    {
         get => _statusValue;
         set
         {
@@ -75,12 +92,12 @@ public abstract class BaseTask : INotifyPropertyChanged
             }
         }
     }
-    
+
     [Ignore]
-    public PriorityType Priority 
-    { 
-        get => (PriorityType)PriorityValue; 
-        set 
+    public PriorityType Priority
+    {
+        get => (PriorityType)PriorityValue;
+        set
         {
             if (PriorityValue != (int)value)
             {
@@ -89,12 +106,12 @@ public abstract class BaseTask : INotifyPropertyChanged
             }
         }
     }
-    
+
     [Ignore]
-    public StatusType Status 
-    { 
-        get => (StatusType)StatusValue; 
-        set 
+    public StatusType Status
+    {
+        get => (StatusType)StatusValue;
+        set
         {
             if (StatusValue != (int)value)
             {
@@ -104,9 +121,8 @@ public abstract class BaseTask : INotifyPropertyChanged
         }
     }
 
-    private int? _threadId;
-    public int? ThreadId 
-    { 
+    public int? ThreadId
+    {
         get => _threadId;
         set
         {
@@ -117,10 +133,9 @@ public abstract class BaseTask : INotifyPropertyChanged
             }
         }
     }
-    
-    private DateTime? _createdAt;
-    public DateTime? CreatedAt 
-    { 
+
+    public DateTime? CreatedAt
+    {
         get => _createdAt;
         set
         {
@@ -131,10 +146,9 @@ public abstract class BaseTask : INotifyPropertyChanged
             }
         }
     }
-    
-    private DateTime? _lastCompletionTime;
+
     public DateTime? LastCompletionTime
-    { 
+    {
         get => _lastCompletionTime;
         set
         {
@@ -146,13 +160,11 @@ public abstract class BaseTask : INotifyPropertyChanged
         }
     }
 
-    [ForeignKey(typeof(TaskLogger))]
-    public int? TaskLoggerId { get; set; }
+    [ForeignKey(typeof(TaskLogger))] public int? TaskLoggerId { get; set; }
 
-    private TaskLogger _logger;
     [OneToOne(CascadeOperations = CascadeOperation.All)]
-    public TaskLogger Logger 
-    { 
+    public TaskLogger Logger
+    {
         get => _logger;
         set
         {
@@ -164,19 +176,13 @@ public abstract class BaseTask : INotifyPropertyChanged
         }
     }
 
+    public DateTime? CompletionTime { get; set; }
+
     public event PropertyChangedEventHandler PropertyChanged;
 
     protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
-
-    public BaseTask(string name, PriorityType priority)
-    {
-        Name = name;
-        Priority = priority;
-        Status = StatusType.Pending;
-        CreatedAt = DateTime.Now;
     }
 
     public abstract void Execute();
@@ -185,6 +191,4 @@ public abstract class BaseTask : INotifyPropertyChanged
     {
         Status = status;
     }
-    
-    public DateTime? CompletionTime { get; set; }
 }

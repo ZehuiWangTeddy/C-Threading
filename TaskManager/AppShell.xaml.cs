@@ -1,11 +1,9 @@
-﻿using Microsoft.Maui.Controls;
-
-namespace TaskManager;
+﻿namespace TaskManager;
 
 public partial class AppShell : Shell
 {
-	public AppShell()
-	{
-		InitializeComponent();
-	}
+    public AppShell()
+    {
+        InitializeComponent();
+    }
 }

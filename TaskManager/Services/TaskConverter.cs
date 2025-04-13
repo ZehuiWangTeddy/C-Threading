@@ -2,83 +2,79 @@ using TaskManager.Models;
 using TaskManager.Models.DBModels;
 using TaskManager.Models.Enums;
 
-namespace TaskManager.Services
+namespace TaskManager.Services;
+
+public static class TaskConverter
 {
-    public static class TaskConverter
+    public static BaseTask ConvertToDbTask(TaskItem taskItem, int executionTimeId)
     {
-        public static BaseTask ConvertToDbTask(TaskItem taskItem, int executionTimeId)
+        var taskLogger = CreateTaskLogger();
+
+        return taskItem.TaskType switch
         {
-            var taskLogger = CreateTaskLogger();
-            
-            return taskItem.TaskType switch
+            "Folder Watcher Task" => new FolderWatcherTask(
+                taskItem.Name,
+                executionTimeId,
+                Enum.Parse<PriorityType>(taskItem.Priority),
+                taskItem.FileDirectory)
             {
-                "Folder Watcher Task" => new FolderWatcherTask(
-                    name: taskItem.Name,
-                    executionTimeId: executionTimeId,
-                 
-                    priority: Enum.Parse<PriorityType>(taskItem.Priority),
-                    folderDirectory: taskItem.FileDirectory)
-                {
+                ExecutionTime = CreateExecutionTime(taskItem),
 
-                    ExecutionTime = CreateExecutionTime(taskItem),
+                Logger = taskLogger
+            },
 
-                    Logger = taskLogger 
-                },
-
-                "File Compression Task" => new FileCompressionTask(
-                    name: taskItem.Name,
-                    executionTimeId: executionTimeId,
-                    priority: Enum.Parse<PriorityType>(taskItem.Priority),
-                    fileDirectory: taskItem.FileDirectory)
-                {
-                    Logger = taskLogger 
-                },
-
-                "File Backup System Task" => new FileBackupSystemTask(
-                    name: taskItem.Name,
-                    executionTimeId: executionTimeId,
-                    priority: Enum.Parse<PriorityType>(taskItem.Priority),
-                    targetDirectory: taskItem.TargetDirectory,
-                    sourceDirectory: taskItem.SourceDirectory)
-                {
-                    Logger = taskLogger 
-                },
-
-                "Email Notification Task" => new EmailNotificationTask(
-                    name: taskItem.Name,
-                    executionTimeId: executionTimeId,
-                    priority: Enum.Parse<PriorityType>(taskItem.Priority),
-                    senderEmail: taskItem.SenderEmail,
-                    recipientEmail: taskItem.ReceiverEmail,
-                    subject: taskItem.EmailSubject,
-                    messageBody: taskItem.EmailBody)
-                {
-                    Logger = taskLogger 
-                },
-
-                _ => throw new ArgumentException("Invalid task type")
-            };
-        }
-
-        public static ExecutionTime CreateExecutionTime(TaskItem taskItem)
-        {
-            var recurrencePattern = Enum.Parse<RecurrencePattern>(taskItem.RecurrencePattern);
-            if (recurrencePattern == RecurrencePattern.OneTime)
+            "File Compression Task" => new FileCompressionTask(
+                taskItem.Name,
+                executionTimeId,
+                Enum.Parse<PriorityType>(taskItem.Priority),
+                taskItem.FileDirectory)
             {
-                return new ExecutionTime(
-                    onceExecutionTime: taskItem.ExecutionTime,
-                    recurrencePattern: recurrencePattern,
-                    nextExecutionTime: null);
-            }
+                Logger = taskLogger
+            },
+
+            "File Backup System Task" => new FileBackupSystemTask(
+                taskItem.Name,
+                executionTimeId,
+                Enum.Parse<PriorityType>(taskItem.Priority),
+                taskItem.TargetDirectory,
+                taskItem.SourceDirectory)
+            {
+                Logger = taskLogger
+            },
+
+            "Email Notification Task" => new EmailNotificationTask(
+                taskItem.Name,
+                executionTimeId,
+                Enum.Parse<PriorityType>(taskItem.Priority),
+                taskItem.SenderEmail,
+                taskItem.ReceiverEmail,
+                taskItem.EmailSubject,
+                taskItem.EmailBody)
+            {
+                Logger = taskLogger
+            },
+
+            _ => throw new ArgumentException("Invalid task type")
+        };
+    }
+
+    public static ExecutionTime CreateExecutionTime(TaskItem taskItem)
+    {
+        var recurrencePattern = Enum.Parse<RecurrencePattern>(taskItem.RecurrencePattern);
+        if (recurrencePattern == RecurrencePattern.OneTime)
             return new ExecutionTime(
-                onceExecutionTime: null,
-                recurrencePattern: recurrencePattern,
-                nextExecutionTime: taskItem.NextRunTime);
-        }
+                taskItem.ExecutionTime,
+                recurrencePattern,
+                null);
 
-        public static TaskLogger CreateTaskLogger()
-        {
-            return new TaskLogger();
-        }
+        return new ExecutionTime(
+            null,
+            recurrencePattern,
+            taskItem.NextRunTime);
+    }
+
+    public static TaskLogger CreateTaskLogger()
+    {
+        return new TaskLogger();
     }
 }

@@ -115,7 +115,8 @@
                     <HorizontalStackLayout Spacing="15">
                         <DatePicker Date="{Binding ExecutionDate}" HorizontalOptions="Start">
                             <DatePicker.Behaviors>
-                                <toolkit:EventToCommandBehavior Command="{Binding TimeChangedCommand}" EventName="DateSelected" />
+                                <toolkit:EventToCommandBehavior Command="{Binding TimeChangedCommand}"
+                                                                EventName="DateSelected" />
                             </DatePicker.Behaviors>
                         </DatePicker>
                         <!--<TimePicker HorizontalOptions="Start" Time="{Binding ExecutionTime}" />-->

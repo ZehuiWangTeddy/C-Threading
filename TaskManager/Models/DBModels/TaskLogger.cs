@@ -1,50 +1,46 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Newtonsoft.Json;
 using SQLite;
-using Newtonsoft.Json;  
 
-namespace TaskManager.Models.DBModels
+namespace TaskManager.Models.DBModels;
+
+public class TaskLogger : INotifyPropertyChanged
 {
-    public class TaskLogger : INotifyPropertyChanged
-    {
-        [PrimaryKey, AutoIncrement]
-        public int Id { get; set; }
+    private string _logMessages = "[]";
+    [PrimaryKey] [AutoIncrement] public int Id { get; set; }
 
-        private string _logMessages = "[]";
-        public string LogMessages 
-        { 
-            get => _logMessages;
-            set
+    public string LogMessages
+    {
+        get => _logMessages;
+        set
+        {
+            if (_logMessages != value)
             {
-                if (_logMessages != value)
-                {
-                    _logMessages = value;
-                    OnPropertyChanged();
-                }
+                _logMessages = value;
+                OnPropertyChanged();
             }
         }
+    }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+    public event PropertyChangedEventHandler PropertyChanged;
 
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
+    protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
 
-        public void AddLogMessage(string message)
-        {
-            var logs = GetLogMessages();
-            logs.Add(message);
-            LogMessages = JsonConvert.SerializeObject(logs);
-        }
+    public void AddLogMessage(string message)
+    {
+        var logs = GetLogMessages();
+        logs.Add(message);
+        LogMessages = JsonConvert.SerializeObject(logs);
+    }
 
-        public List<string> GetLogMessages()
-        {
-            Debug.WriteLine($"LogMessages: {LogMessages}");
-            return JsonConvert.DeserializeObject<List<string>>(LogMessages) ?? new List<string>();
-        }
+    public List<string> GetLogMessages()
+    {
+        Debug.WriteLine($"LogMessages: {LogMessages}");
+        return JsonConvert.DeserializeObject<List<string>>(LogMessages) ?? new List<string>();
     }
 }
