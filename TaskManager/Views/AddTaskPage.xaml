@@ -1,0 +1,185 @@
+<ContentPage
+    x:Class="TaskManager.Views.AddTaskPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:converters="clr-namespace:TaskManager.Converters"
+    xmlns:enum="clr-namespace:TaskManager.Models.Enums"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:TaskManager.ViewModels"
+    Title="Add New Task"
+    x:DataType="vm:AddTaskViewModel">
+
+    <ContentPage.Resources>
+        <converters:StringToBoolConverter x:Key="StringToBoolConverter" />
+        <converters:ComparisonConverter x:Key="ComparisonConverter" />
+    </ContentPage.Resources>
+
+    <ScrollView Padding="20">
+        <VerticalStackLayout Spacing="20">
+            <!--  Common Fields  -->
+            <Label FontAttributes="Bold" Text="Task Name" />
+            <Entry Placeholder="Task Name" Text="{Binding TaskName}" />
+
+            <!--  Task Type Selection  -->
+            <VerticalStackLayout Spacing="5">
+                <Label FontAttributes="Bold" Text="Task Type" />
+                <HorizontalStackLayout Spacing="20">
+                    <RadioButton
+                        Content="Folder Watcher"
+                        FontSize="14"
+                        GroupName="TaskTypeGroup"
+                        IsChecked="{Binding SelectedTaskType, Converter={StaticResource StringToBoolConverter}, ConverterParameter='Folder Watcher Task'}" />
+
+                    <RadioButton
+                        Content="File Compression"
+                        FontSize="14"
+                        GroupName="TaskTypeGroup"
+                        IsChecked="{Binding SelectedTaskType, Converter={StaticResource StringToBoolConverter}, ConverterParameter='File Compression Task'}" />
+
+                    <RadioButton
+                        Content="File Backup"
+                        FontSize="14"
+                        GroupName="TaskTypeGroup"
+                        IsChecked="{Binding SelectedTaskType, Converter={StaticResource StringToBoolConverter}, ConverterParameter='File Backup System Task'}" />
+
+                    <RadioButton
+                        Content="Email Notification"
+                        FontSize="14"
+                        GroupName="TaskTypeGroup"
+                        IsChecked="{Binding SelectedTaskType, Converter={StaticResource StringToBoolConverter}, ConverterParameter='Email Notification Task'}" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
+            <!--  Dynamic Fields  -->
+            <StackLayout IsVisible="{Binding IsFolderWatcherVisible}">
+                <Entry Placeholder="File Directory" Text="{Binding FileDirectory}" />
+            </StackLayout>
+
+            <StackLayout IsVisible="{Binding IsFileCompressionVisible}">
+                <Entry Placeholder="File Directory" Text="{Binding FileDirectory}" />
+            </StackLayout>
+
+            <StackLayout IsVisible="{Binding IsFileBackupVisible}">
+                <Entry Placeholder="Source Directory" Text="{Binding SourceDirectory}" />
+                <Entry Placeholder="Target Directory" Text="{Binding TargetDirectory}" />
+            </StackLayout>
+
+            <StackLayout IsVisible="{Binding IsEmailNotificationVisible}">
+                <Entry Placeholder="Sender Email" Text="{Binding SenderEmail}" />
+                <Entry Placeholder="Receiver Email" Text="{Binding ReceiverEmail}" />
+                <Entry Placeholder="Subject" Text="{Binding EmailSubject}" />
+                <Editor
+                    HeightRequest="100"
+                    Placeholder="Message Body"
+                    Text="{Binding EmailBody}" />
+            </StackLayout>
+
+            <!--  Execution Time  -->
+            <VerticalStackLayout Spacing="5">
+                <Label FontAttributes="Bold" Text="Execution Time Settings" />
+
+                <Label Text="Recurrence Pattern" />
+                <HorizontalStackLayout Spacing="15">
+                    <RadioButton
+                        Content="One Time"
+                        GroupName="RecurrenceGroup"
+                        IsChecked="{Binding SelectRecurrencePattern, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static enum:RecurrencePattern.OneTime}}" />
+                    <RadioButton
+                        Content="Minutely"
+                        GroupName="RecurrenceGroup"
+                        IsChecked="{Binding SelectRecurrencePattern, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static enum:RecurrencePattern.Minute}}" />
+                    <RadioButton
+                        Content="Hourly"
+                        GroupName="RecurrenceGroup"
+                        IsChecked="{Binding SelectRecurrencePattern, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static enum:RecurrencePattern.Hourly}}" />
+                    <RadioButton
+                        Content="Daily"
+                        GroupName="RecurrenceGroup"
+                        IsChecked="{Binding SelectRecurrencePattern, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static enum:RecurrencePattern.Daily}}" />
+                    <RadioButton
+                        Content="Weekly"
+                        GroupName="RecurrenceGroup"
+                        IsChecked="{Binding SelectRecurrencePattern, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static enum:RecurrencePattern.Weekly}}" />
+                    <RadioButton
+                        Content="Monthly"
+                        GroupName="RecurrenceGroup"
+                        IsChecked="{Binding SelectRecurrencePattern, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static enum:RecurrencePattern.Monthly}}" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
+            <!--  Time Selection  -->
+            <VerticalStackLayout Spacing="10">
+                <!--  Execution Time  -->
+                <VerticalStackLayout Spacing="5">
+                    <Label FontAttributes="Bold" Text="Execution Time" />
+                    <HorizontalStackLayout Spacing="15">
+                        <DatePicker Date="{Binding ExecutionDate}" HorizontalOptions="Start">
+                            <DatePicker.Behaviors>
+                                <toolkit:EventToCommandBehavior Command="{Binding TimeChangedCommand}"
+                                                                EventName="DateSelected" />
+                            </DatePicker.Behaviors>
+                        </DatePicker>
+                        <!--<TimePicker HorizontalOptions="Start" Time="{Binding ExecutionTime}" />-->
+                        <TimePicker HorizontalOptions="Start" Time="{Binding ExecutionTimeSpan}" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+
+                <!--  Next Run Time  -->
+                <VerticalStackLayout IsVisible="{Binding ShowNextRunTime}" Spacing="5">
+                    <Label FontAttributes="Bold" Text="Next Run Time (Auto Calculated)" />
+                    <HorizontalStackLayout Spacing="15">
+                        <Label
+                            FontSize="14"
+                            Text="{Binding NextRunDate, StringFormat='{0:D}'}"
+                            VerticalOptions="Center" />
+                        <Label
+                            FontSize="14"
+                            Text="{Binding NextRunTimeSpan, StringFormat='{}{0:hh\\:mm\\:ss}'}"
+                            VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+
+            <!--  Priority  -->
+            <VerticalStackLayout Spacing="5">
+                <Label FontAttributes="Bold" Text="Priority" />
+                <HorizontalStackLayout Spacing="20">
+                    <RadioButton
+                        Content="High"
+                        GroupName="PriorityGroup"
+                        IsChecked="{Binding Priority, Converter={StaticResource StringToBoolConverter}, ConverterParameter='High'}" />
+                    <RadioButton
+                        Content="Medium"
+                        GroupName="PriorityGroup"
+                        IsChecked="{Binding Priority, Converter={StaticResource StringToBoolConverter}, ConverterParameter='Medium'}" />
+                    <RadioButton
+                        Content="Low"
+                        GroupName="PriorityGroup"
+                        IsChecked="{Binding Priority, Converter={StaticResource StringToBoolConverter}, ConverterParameter='Low'}" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
+            <!--  Action Buttons  -->
+            <Grid
+                Margin="0,20"
+                ColumnDefinitions="*,*"
+                ColumnSpacing="10">
+                <Button
+                    Grid.Column="0"
+                    BackgroundColor="#4CAF50"
+                    Command="{Binding ConfirmCommand}"
+                    CornerRadius="5"
+                    Text="Confirm"
+                    TextColor="White" />
+
+                <Button
+                    Grid.Column="1"
+                    BackgroundColor="#9E9E9E"
+                    Clicked="OnCancelClicked"
+                    CornerRadius="5"
+                    Text="Cancel"
+                    TextColor="White" />
+            </Grid>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

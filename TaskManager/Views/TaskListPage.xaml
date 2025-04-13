@@ -1,0 +1,110 @@
+<ContentPage
+    x:Class="TaskManager.Views.TaskListPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:convert="clr-namespace:TaskManager.Converters"
+    xmlns:model="clr-namespace:TaskManager.Models"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:TaskManager.ViewModels"
+    Title="Task List"
+    x:DataType="vm:TaskListViewModel">
+    <ContentPage.Resources>
+        <convert:StatusToBackgroundConverter x:Key="StatusToBackgroundConverter" />
+        <convert:StatusToVisibilityConverter x:Key="StatusToVisibilityConverter" />
+    </ContentPage.Resources>
+    <ContentPage.Behaviors>
+        <toolkit:EventToCommandBehavior Command="{Binding LoadedCmd}" EventName="Loaded" />
+    </ContentPage.Behaviors>
+
+
+    <Grid Padding="20" RowDefinitions="Auto, Auto,*, Auto">
+        <!--  Refresh Button  -->
+        <ImageButton
+            Grid.Row="1"
+            Margin="0,0,0,8"
+            Command="{Binding RefreshCmd}"
+            HeightRequest="40"
+            HorizontalOptions="End"
+            Source="flushed.png"
+            VerticalOptions="Start"
+            WidthRequest="40" />
+
+        <!--  Task List  -->
+        <CollectionView
+            Grid.Row="2"
+            ItemsSource="{Binding Tasks}"
+            VerticalOptions="Fill">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="model:TaskItem">
+                    <Frame
+                        Margin="0,5"
+                        Padding="10"
+                        BackgroundColor="{Binding Status, Converter={StaticResource StatusToBackgroundConverter}}"
+                        CornerRadius="10">
+                        <Grid ColumnDefinitions="*, Auto">
+                            <!--  Task Details  -->
+                            <VerticalStackLayout Grid.Column="0">
+                                <Label
+                                    FontAttributes="Bold"
+                                    FontSize="18"
+                                    Text="{Binding Name}" />
+                                <VerticalStackLayout Spacing="5">
+                                    <Label
+                                        FontSize="14"
+                                        Text="{Binding TaskType}"
+                                        TextColor="LightGray" />
+                                    <Label
+                                        FontSize="14"
+                                        Text="{Binding ExecutionTime, StringFormat='Execution: {0:yyyy-MM-dd HH:mm}'}"
+                                        TextColor="LightGray" />
+                                </VerticalStackLayout>
+                            </VerticalStackLayout>
+
+                            <!--  Action Buttons  -->
+                            <HorizontalStackLayout
+                                Grid.Column="1"
+                                Spacing="10"
+                                VerticalOptions="Center">
+                                <Button
+                                    BackgroundColor="#4CAF50"
+                                    Clicked="OnStartTask"
+                                    CornerRadius="5"
+                                    IsVisible="{Binding Status, Converter={StaticResource StatusToVisibilityConverter}}"
+                                    Text="Start"
+                                    TextColor="White"
+                                    WidthRequest="70" />
+                                <Button
+                                    BackgroundColor="#2196F3"
+                                    Clicked="OnDetailsClicked"
+                                    CornerRadius="5"
+                                    Text="Details"
+                                    TextColor="White"
+                                    WidthRequest="70" />
+                                <Button
+                                    BackgroundColor="#f44336"
+                                    Clicked="OnCancelTask"
+                                    CornerRadius="5"
+                                    IsVisible="{Binding Status, Converter={StaticResource StatusToVisibilityConverter}}"
+                                    Text="Cancel"
+                                    TextColor="White"
+                                    WidthRequest="70" />
+                            </HorizontalStackLayout>
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!--  Add Task Button  -->
+        <Button
+            Grid.Row="3"
+            Padding="20,10"
+            BackgroundColor="#2196F3"
+            Clicked="OnAddTaskClicked"
+            CornerRadius="20"
+            HorizontalOptions="Center"
+            Text="Add Task"
+            TextColor="White"
+            VerticalOptions="End" />
+    </Grid>
+</ContentPage>
