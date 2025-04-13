@@ -11,6 +11,7 @@ public partial class DashboardPage : ContentPage
     private List<BaseTask> _completedTasks;
     private List<BaseTask> _failedTasks;
     private List<BaseTask> _pendingTasks;
+    private List<BaseTask> _runningTasks;
     private ITaskRepository _taskRepository;
     private TaskService _taskService;
 
@@ -21,25 +22,37 @@ public partial class DashboardPage : ContentPage
         _completedTasks = new List<BaseTask>();
         _pendingTasks = new List<BaseTask>();
         _failedTasks = new List<BaseTask>();
+        _runningTasks = new List<BaseTask>();
 
         BarChartView.Drawable = new BarChartDrawable();
         PieChartView.Drawable = new PieChartDrawable();
         LineChartView.Drawable = new LineChartDrawable();
-
-        Appearing += OnPageAppearing;
     }
 
     private IServiceProvider ServiceProvider =>
         Application.Current.MainPage?.Handler?.MauiContext?.Services
         ?? throw new InvalidOperationException("Unable to obtain service provider");
 
-    private void OnPageAppearing(object sender, EventArgs e)
+    private void OnPageRefresh(object sender, EventArgs e)
     {
         LoadTaskData();
         UpdateCharts();
         UpdateSummaryLabels();
         LoadRecentTasks();
     }
+    
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+
+        await Task.Delay(100);
+
+        LoadTaskData();
+        UpdateCharts();
+        UpdateSummaryLabels();
+        LoadRecentTasks();
+    }
+
 
     private void LoadRecentTasks()
     {
@@ -78,7 +91,6 @@ public partial class DashboardPage : ContentPage
     {
         try
         {
-            // Get the repositories and services from DI
             _taskRepository = ServiceProvider.GetService<ITaskRepository>();
             _taskService = ServiceProvider.GetService<TaskService>();
 
@@ -87,6 +99,7 @@ public partial class DashboardPage : ContentPage
                 _completedTasks = _taskRepository.GetTasks(StatusType.Completed);
                 _pendingTasks = _taskRepository.GetTasks(StatusType.Pending);
                 _failedTasks = _taskRepository.GetTasks(StatusType.Failed);
+                _runningTasks = _taskRepository.GetTasks(StatusType.Running);
             }
             else
             {
@@ -125,7 +138,7 @@ public partial class DashboardPage : ContentPage
             pieChart.UpdateData(
                 _completedTasks.Count,
                 _pendingTasks.Count,
-                _failedTasks.Count
+                _runningTasks.Count
             );
 
             // Update line chart with daily completed tasks
@@ -149,7 +162,7 @@ public partial class DashboardPage : ContentPage
     {
         try
         {
-            TotalTaskLabel.Text = (_completedTasks.Count + _pendingTasks.Count + _failedTasks.Count).ToString();
+            TotalTaskLabel.Text = (_completedTasks.Count + _pendingTasks.Count + _failedTasks.Count + _runningTasks.Count).ToString();
             CompletedTaskLabel.Text = _completedTasks.Count.ToString();
             FailedTaskLabel.Text = _failedTasks.Count.ToString();
         }
@@ -188,7 +201,6 @@ public class BarChartDrawable : IDrawable
 
     public void Draw(ICanvas canvas, RectF dirtyRect)
     {
-        // Group tasks by hour and count them
         var completedByHour = GroupTasksByHour(_completedTasks);
         var failedByHour = GroupTasksByHour(_failedTasks);
 
@@ -302,23 +314,24 @@ public class BarChartDrawable : IDrawable
     }
 }
 
+//Pie Chart Implementation - By Task Status 
 public class PieChartDrawable : IDrawable
 {
     private int _completedTasksCount;
     private bool _dataLoaded;
-    private int _failedTasksCount;
+    private int _runningTasksCount;
     private int _pendingTasksCount;
 
     public PieChartDrawable()
     {
         _completedTasksCount = 0;
         _pendingTasksCount = 0;
-        _failedTasksCount = 0;
+        _runningTasksCount = 0;
     }
 
     public void Draw(ICanvas canvas, RectF dirtyRect)
     {
-        var total = _completedTasksCount + _pendingTasksCount + _failedTasksCount;
+        var total = _completedTasksCount + _pendingTasksCount + _runningTasksCount;
 
         if (total == 0)
         {
@@ -328,11 +341,11 @@ public class PieChartDrawable : IDrawable
 
         var completedPercentage = total > 0 ? (float)_completedTasksCount / total * 100 : 0;
         var pendingPercentage = total > 0 ? (float)_pendingTasksCount / total * 100 : 0;
-        var failedPercentage = total > 0 ? (float)_failedTasksCount / total * 100 : 0;
+        var runningPercentage = total > 0 ? (float)_runningTasksCount / total * 100 : 0;
 
-        var values = new[] { _completedTasksCount, _pendingTasksCount, _failedTasksCount };
-        var percentages = new[] { completedPercentage, pendingPercentage, failedPercentage };
-        var labels = new[] { "Completed", "In Progress", "Failed" };
+        var values = new[] { _completedTasksCount, _runningTasksCount, _pendingTasksCount };
+        var percentages = new[] { completedPercentage, runningPercentage, pendingPercentage };
+        var labels = new[] { "Completed", "Running", "Pending" };
         var colors = new[] { Colors.LimeGreen, Colors.DodgerBlue, Colors.Crimson };
 
         var centerX = dirtyRect.Width / 2;
@@ -388,13 +401,12 @@ public class PieChartDrawable : IDrawable
     {
         _completedTasksCount = completedTasksCount;
         _pendingTasksCount = pendingTasksCount;
-        _failedTasksCount = failedTasksCount;
+        _runningTasksCount = failedTasksCount;
         _dataLoaded = true;
     }
 
     private void DrawEmptyChart(ICanvas canvas, RectF dirtyRect)
     {
-        // Draw empty chart with message
         var centerX = dirtyRect.Width / 2;
         var centerY = dirtyRect.Height / 2;
 
@@ -405,8 +417,7 @@ public class PieChartDrawable : IDrawable
         canvas.FontColor = Colors.Gray;
         canvas.FontSize = 14;
         canvas.DrawString("No task data available", centerX, centerY, HorizontalAlignment.Center);
-
-        // Draw empty legend
+        
         float legendX = 20;
         var legendY = dirtyRect.Height - 70;
 
