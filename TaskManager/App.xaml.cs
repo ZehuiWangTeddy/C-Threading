@@ -30,7 +30,7 @@ public partial class App : Application, IDisposable
         Dispose(true);
         GC.SuppressFinalize(this);
         
-        //If you're using a windows machine and you can't access the database, change the current databasePath to match your database path.
+        //If you're using a windows machine and you can't access the database, replace the current databasePath to match your own database path.
         //For more info refer to the readme file to learn how to get the database path.
         var databasePath =
             @"C:\Users\james\AppData\Local\Packages\com.companyname.taskmanager_9zz4h110yvjzm\LocalCache\Local\TaskManager.db";
